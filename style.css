@@ -1,0 +1,17 @@
+body
+{
+	text-align: center;
+	background-color: #262626;
+	color: #ffffff;
+}
+
+form
+{
+	background-color: #ffffff;
+	color: #000000;
+	border-color: #ffffff;
+	border-style: solid;
+	border-radius: 20px;
+	width: 20%;
+	margin: auto;
+}
