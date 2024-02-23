@@ -7,6 +7,10 @@ body {
     color: #ECF0F1; /* Light gray text color */
     font-family: 'Arial', sans-serif;
     margin: 0;
+    height: 100vh; /* Set the body height to cover the entire viewport */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 form {
@@ -15,7 +19,7 @@ form {
     border: 2px solid #3498DB; /* Bright blue border */
     border-radius: 15px; /* Slightly rounded corners */
     width: 60%; /* Adjusted width for better visibility */
-    margin: 20px auto; /* Center the form */
+    margin: auto; /* Center the form horizontally */
     padding: 20px; /* Added padding for better spacing */
     box-shadow: 0px 0px 10px 0px #333333; /* Drop shadow effect */
 }
@@ -38,3 +42,4 @@ th {
     background-color: #3498DB; /* Bright blue background for table headers */
     color: #ECF0F1; /* Light gray text color for table headers */
 }
+
