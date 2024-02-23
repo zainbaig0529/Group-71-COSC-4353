@@ -1,6 +1,9 @@
 body {
+    background-image: url('fuel.gif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     text-align: center;
-    background-color: #2C3E50; /* Dark blue background, reminiscent of the night sky */
     color: #ECF0F1; /* Light gray text color */
     font-family: 'Arial', sans-serif;
     margin: 0;
