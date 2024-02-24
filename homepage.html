@@ -14,38 +14,34 @@
             background-attachment: fixed;
             color: #fff; /* Set text color to white for better visibility */
         }
+        .button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #2980b9;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
         iframe {
             width: 100%;
             height: 500px;
             border: 1px solid #ccc;
             margin-bottom: 20px;
         }
-        h1 {
-            text-align: center; /* Center the heading */
-        }
-        h2 {
-            color: #3498db; /* Set a different color for section headings */
-        }
     </style>
 </head>
 <body>
 
-    <h1>Welcome to Cougarville Gas</h1>
-
-    <h2>Section 1 - Login</h2>
-    <iframe src="login.html" frameborder="0"></iframe>
-
-    <h2>Section 2 - Profile Management</h2>
-    <iframe src="profile_management.html" frameborder="0"></iframe>
-
-    <h2>Section 3 - Registration</h2>
-    <iframe src="registration.html" frameborder="0"></iframe>
-    
-    <h2>Section 4 - Fuel Quote History</h2>
-    <iframe src="fuel_quote_history.html" frameborder="0"></iframe>
-
-    <h2>Section 5 - Fuel Quote Form</h2>
-    <iframe src="fuel_quote_form.html" frameborder="0"></iframe>
+    <a href="login.html" class="button">Section 1 - Login</a>
+    <a href="profile_management.html" class="button">Section 2 - Profile Management</a>
+    <a href="registration.html" class="button">Section 3 - Registration</a>
+    <a href="fuel_quote_history.html" class="button">Section 4 - Fuel Quote History</a>
+    <a href="fuel_quote_form.html" class="button">Section 5 - Fuel Quote Form</a>
 
 </body>
 </html>
