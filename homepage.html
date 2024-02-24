@@ -18,15 +18,15 @@
             align-items: center;
         }
         h1 {
-            margin-bottom: 20px;
+            margin: 10px 0; /* Adjusted margin for spacing */
+            order: -1; /* Move the title to the start of the flex container */
         }
         .button-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            margin-top: 20px; /* Added margin to separate title and buttons */
             display: flex;
             flex-direction: row; /* Adjusted to be a row */
             align-items: center;
+            justify-content: flex-end; /* Align buttons to the right */
         }
         .button {
             padding: 10px;
@@ -52,12 +52,13 @@
 
     <div class="button-container">
         <a href="#" class="button">Contact Us</a>
-        <a href="login.html" class="button">Section 1 - Login</a>
-        <a href="profile management.html" class="button">Section 2 - Profile Management</a>
-        <a href="registration.html" class="button">Section 3 - Registration</a>
-        <a href="fuel_quote_history.html" class="button">Section 4 - Fuel Quote History</a>
-        <a href="fuel_quote_form.html" class="button">Section 5 - Fuel Quote Form</a>
+        <a href="login.html" class="button">Login</a>
+        <a href="profile management.html" class="button">Profile Management</a>
+        <a href="registration.html" class="button">Registration</a>
+        <a href="fuel_quote_history.html" class="button">Fuel Quote History</a>
+        <a href="fuel_quote_form.html" class="button">Fuel Quote Form</a>
     </div>
 
 </body>
 </html>
+
