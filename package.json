@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/zainbaig0529/Group-71-COSC-4353/issues"
   },
-  "homepage": "https://github.com/zainbaig0529/Group-71-COSC-4353#readme"
+  "homepage": "https://github.com/zainbaig0529/Group-71-COSC-4353#readme",
+  "dependencies": {
+    "express": "^4.18.3"
+  }
 }
