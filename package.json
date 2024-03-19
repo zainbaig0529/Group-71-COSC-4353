@@ -1,0 +1,19 @@
+{
+  "name": "group-71-cosc-4353",
+  "version": "1.0.0",
+  "description": "group project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zainbaig0529/Group-71-COSC-4353.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zainbaig0529/Group-71-COSC-4353/issues"
+  },
+  "homepage": "https://github.com/zainbaig0529/Group-71-COSC-4353#readme"
+}
