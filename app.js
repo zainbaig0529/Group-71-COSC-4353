@@ -19,7 +19,18 @@ app.post('/login.html', function (req, res) {
     console.log(req.body.email);
 });
 
+app.post('/registration.html', function (req, res) {
+  console.log(req.body.email);
+});
+
+app.post('/profile_management.html', function (req, res) {
+  console.log(req.body.fullName);
+});
+
+app.post('/fuel_quote_form.html', function (req, res) {
+  console.log(req.body.gallonsRequested);
+});
+
 app.listen(3000, function () {
   console.log("Server is running on localhost3000");
 });
-
