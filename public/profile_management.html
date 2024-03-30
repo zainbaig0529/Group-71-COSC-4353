@@ -11,17 +11,20 @@
 <div class="container">
     <form action="profile_management.html" method="post">
 		<h2>Client Profile Management</h2>
-        <label for="fullName">Full Name:</label><br>
-        <input type="text" id="fullName" name="fullName" maxlength="50" required><br><br>
+        <label for="firstName">First Name:</label><br>
+        <input type="text" id="firstName" name="firstName" minlength="1" maxlength="50" required><br><br>
+
+		<label for="lastName">Last Name:</label><br>
+        <input type="text" id="lastName" name="lastName" minlength="1" maxlength="50" required><br><br>
 
         <label for="address1">Address 1:</label><br>
-        <input type="text" id="address1" name="address1" maxlength="100" required><br><br>
+        <input type="text" id="address1" name="address1" minlength="1" maxlength="100" required><br><br>
 
         <label for="address2">Address 2:</label><br>
         <input type="text" id="address2" name="address2" maxlength="100"><br><br>
 
         <label for="city">City:</label><br>
-        <input type="text" id="city" name="city" maxlength="100" required><br><br>
+        <input type="text" id="city" name="city" minlength="1" maxlength="100" required><br><br>
 
         <label for="state">State:</label><br>
         <select id="state" name="state" required>

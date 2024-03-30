@@ -11,19 +11,13 @@
         <form action="fuel_quote_form.html" method="post">
 			<h1>Fuel Quote Form</h1>
             <label for="gallonsRequested">Gallons Requested:</label><br>
-            <input type="number" id="gallonsRequested" name="gallonsRequested" required><br><br>
+            <input type="number" id="gallonsRequested" name="gallonsRequested" min="1" required><br><br>
 
             <label for="deliveryAddress">Delivery Address:</label><br>
-            <input type="text" id="deliveryAddress" name="deliveryAddress" readonly><br><br><!-- Non-editable field -->
+            <input type="text" id="deliveryAddress" name="deliveryAddress" minlength="1" maxlength="100" readonly><br><br><!-- Non-editable field -->
 
             <label for="deliveryDate">Delivery Date:</label><br>
             <input type="date" id="deliveryDate" name="deliveryDate"><br><br>
-
-            <label for="suggestedPrice">Suggested Price / gallon:</label><br>
-            <input type="number" id="suggestedPrice" name="suggestedPrice" readonly><br><br><!-- Non-editable field -->
-
-            <label for="totalAmountDue">Total Amount Due:</label><br>
-            <input type="number" id="totalAmountDue" name="totalAmountDue" readonly><br><br><!-- Non-editable field -->
 
             <button type="submit">Submit</button>
         </form>

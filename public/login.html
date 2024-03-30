@@ -10,10 +10,10 @@
     <form action="login.html" method="post">
         <h1>Sign In</h1>
         <label for="email">Email:</label><br>
-        <input type="text" id="email" name="email"><br><br>
+        <input type="text" id="email" name="email" minlength="1" maxlength="50" required><br><br>
 
         <label for="password">Password:</label><br>
-        <input type="text" id="password" name="password"><br><br>
+        <input type="text" id="password" name="password" minlength="8" maxlength="25" required><br><br>
 
         <input type="submit" value="Login"><br>
         <p>Don't have an account? <a href="registration.html">Sign Up</a></p>
