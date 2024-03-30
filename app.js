@@ -4,6 +4,8 @@ const app = express();
 const PORT = 3000;
 const {body, validationResult} = require('express-validator');
 
+app.set('view engine','ejs');
+
 //tell app where to find static content
 app.use(express.static('public'));
 app.use(express.static('assets'));
@@ -40,9 +42,28 @@ app.post('/login.html',
 	//Will send to database when set up. For now, checks if data is in valid formats.
 });
 
-app.post('/registration.html', function (req, res) {
-  console.log(req.body.email);
+app.post('/registration.html',
+    body('email').isEmail().withMessage('Invalid email'),
+    body('password').isLength({ min: 8 }).withMessage('Invalid password. Must be at least 8 characters'),
+    function (req, res) {
+    const errors = validationResult(req);
+  if(!errors.isEmpty())
+  {
+        return res.status(400).json(
+        {
+            success: false,
+            errors:errors.array()
+        });
+    }
+
+    res.status(200).json(
+    {
+        success: true,
+        message: 'Registration Successful',
+    })
+  //This is where we will send the data from the registration page to the backend.
 });
+
 
 app.post('/profile_management.html',
         body('firstName').isLength({min:1, max:50}).withMessage('Invalid first name'),
@@ -74,15 +95,26 @@ app.post('/profile_management.html',
 
 app.post('/fuel_quote_form.html',
 		body('gallonsRequested').isLength({min:1}),
-		body('deliveryAddress').isLength({min:1, max:100}),
-		function(req, res)
-{
+		body('deliveryDate').isISO8601(),
+		function(req, res){
+	const errors = validationResult(req)
+;
+	if(!errors.isEmpty())
+	{
+		return res.status(400).json(
+		{
+			success: false,
+			errors:errors.array()
+		});
+	}
+	
+	var total_due = req.body.gallonsRequested * 1.25
 	const data = {
 	price_per_gallon: 1.25,
-	total_amount_due: 100,
+	total_amount_due: total_due,
 	};
 	
-	res.render('fuel_quote_form_results', price_per_gallon, total_amount_due);
+	res.render('fuel_quote_form_results', data);
 
     //Will send to database when set up. For now, checks if data is in valid formats.
 });

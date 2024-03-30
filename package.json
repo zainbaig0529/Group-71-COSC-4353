@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/zainbaig0529/Group-71-COSC-4353#readme",
   "dependencies": {
+    "ejs": "^3.1.9",
     "express": "^4.18.3",
     "express-validator": "^7.0.1",
     "mysql": "^2.18.1"
