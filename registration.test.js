@@ -7,14 +7,11 @@ const app = require('./app.js'); // Update file extension to .js
 chai.use(chaiHttp);
 const { expect } = chai;
 
-// Import the request function from chai-http
-const request = chai.request;
-
 // Define test suite
 describe('User Registration Form', () => {
   // Test case: Form submission with valid data
   it('should submit form with valid data', (done) => {
-    request(app)
+    chai.request(app)
       .post('/registration.html')
       .send({
         email: 'test@example.com',
@@ -30,7 +27,7 @@ describe('User Registration Form', () => {
 
   // Test case: Field validation
   it('should display error message for invalid email format', (done) => {
-    request(app)
+    chai.request(app)
       .post('/registration.html')
       .send({
         email: 'invalid-email',
