@@ -1,7 +1,6 @@
 // Import necessary modules
 const chai = require('chai');
-const chaiHttp = require('chai-http');
-const app = require('./app.js'); // Update file extension to .js
+
 
 // Configure Chai
 chai.use(chaiHttp);
