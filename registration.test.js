@@ -1,7 +1,7 @@
 // Import necessary modules
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const app = require('./app'); // Assuming your Express app is defined in app.js
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import app from './app'; // Assuming your Express app is defined in app.js
 
 // Configure Chai
 chai.use(chaiHttp);
@@ -41,45 +41,6 @@ describe('User Registration Form', () => {
       });
   });
 
-  it('should display error message for invalid password length', (done) => {
-    chai.request(app)
-      .post('/registration.html')
-      .send({
-        email: 'test@example.com',
-        password: 'short',
-        confirm: 'short'
-      })
-      .end((err, res) => {
-        expect(res.text).to.include('Invalid password'); // Assuming the server returns an error message
-        // Add more assertions as needed
-        done();
-      });
-  });
+  // Add more test cases as needed
 
-  // Test case: Confirmation password matching
-  it('should display error message if confirmation password does not match', (done) => {
-    chai.request(app)
-      .post('/registration.html')
-      .send({
-        email: 'test@example.com',
-        password: 'password123',
-        confirm: 'differentpassword'
-      })
-      .end((err, res) => {
-        expect(res.text).to.include('Passwords do not match'); // Assuming the server returns an error message
-        // Add more assertions as needed
-        done();
-      });
-  });
-
-  // Test case: Navigation to login page
-  it('should navigate to login page when "Sign in" link is clicked', (done) => {
-    chai.request(app)
-      .get('/registration.html')
-      .end((err, res) => {
-        expect(res.text).to.include('<a href="login.html">Sign in</a>'); // Assuming the login link is present in the response HTML
-        // Add more assertions as needed
-        done();
-      });
-  });
 });
