@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "chai": "^5.1.0",
+    "esm": "^3.2.25",
     "supertest": "^6.3.4"
   }
 }
