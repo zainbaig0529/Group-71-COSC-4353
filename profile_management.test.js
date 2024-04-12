@@ -1,20 +1,19 @@
-// profile.test.js
+// Import necessary modules
+const chai = require('chai');
 
-// Use dynamic import for chai module
-import('chai').then(chai => {
-    const expect = chai.expect;
-  
-  
-    describe('Profile Tests', () => {
-      it('should update profile information', () => {
+// Configure Chai
+const { expect } = chai;
+
+// Import the module or function you want to test (e.g., updateProfile)
+const { updateProfile } = require('./path/to/updateProfile.js');
+
+// Define test suite
+describe('Profile Tests', () => {
+    it('should update profile information', () => {
+        // Call the function you want to test
         const result = updateProfile('John', 'Doe', '123 Street', 'Apt 1', 'City', '12345');
-        expect(result).to.exist;
-      });
-  
+        
+        // Use Jest's expect function to make assertions about the result
+        expect(result).toBeDefined(); // Assuming updateProfile returns a defined value
     });
-  
-  }).catch(error => {
-    // Handle any errors that occur during dynamic import
-    console.error('Error loading chai:', error);
-  });
-  
+});

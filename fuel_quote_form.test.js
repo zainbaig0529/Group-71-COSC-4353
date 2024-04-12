@@ -1,24 +1,24 @@
-// fuel_quote.test.js
+// Import necessary modules
+const chai = require('chai');
 
-// Use dynamic import for chai module
-import('chai').then(chai => {
-    const expect = chai.expect;
-  
-  
-    describe('Fuel Quote Tests', () => {
-      it('should perform a fuel quote calculation', () => {
-        // Your test code goes here
-        // For example:
+// Configure Chai
+const { expect } = chai;
+
+// Import the function you want to test (e.g., calculateFuelQuote)
+const { calculateFuelQuote } = require('./path/to/calculateFuelQuote.js');
+
+// Define test suite
+describe('Fuel Quote Tests', () => {
+    it('should perform a fuel quote calculation', () => {
+        // Call the function you want to test
         const result = calculateFuelQuote(100); // Assuming 100 gallons requested
-        expect(result).to.exist;
-        expect(result.totalAmount).to.be.a('number');
-        expect(result.totalAmount).to.be.greaterThan(0);
-      });
-  
+        
+        // Use Jest's expect function to make assertions about the result
+        expect(result).toBeDefined(); // Assuming calculateFuelQuote returns a defined value
+        expect(result.totalAmount).toBeDefined(); // Assuming result.totalAmount is defined
+        expect(typeof result.totalAmount).toBe('number'); // Assuming result.totalAmount is a number
+        expect(result.totalAmount).toBeGreaterThan(0); // Assuming result.totalAmount is greater than 0
     });
-  
-  }).catch(error => {
-    // Handle any errors that occur during dynamic import
-    console.error('Error loading chai:', error);
-  });
+});
+
   
