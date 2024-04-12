@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "group project",
   "main": "index.js",
-  "type": "commonjs", 
+  "type": "commonjs",
   "scripts": {
     "dev": "npm run development",
     "test": "mocha --require esm '*.test.js'"
@@ -27,9 +27,8 @@
   "devDependencies": {
     "chai": "^5.1.0",
     "esm": "^3.2.25",
+    "jest": "^29.7.0",
     "mocha": "^10.4.0",
     "supertest": "^6.3.4"
   }
 }
-
-
