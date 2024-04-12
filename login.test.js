@@ -1,53 +1,27 @@
-// login.test.js
+const assert = require('assert');
+const request = require('supertest');
+const app = require('../app.js'); // Path to your Express application file
 
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const app = require('./app'); // Assuming your server is defined in app.js
-const { expect } = chai;
-
-chai.use(chaiHttp);
-
-describe('User Login', () => {
-  it('should login a user with valid credentials', (done) => {
-    chai.request(app)
+describe('POST /login.html', () => {
+  it('should return 400 if email is invalid', async () => {
+    const res = await request(app)
       .post('/login.html')
-      .send({
-        email: 'test@example.com',
-        password: 'password123'
-      })
-      .end((err, res) => {
-        expect(res).to.have.status(200); // Assuming successful login returns status code 200
-        // Add more assertions as needed
-        done();
-      });
+      .send({ email: 'invalid-email', password: 'validpassword' });
+    assert.strictEqual(res.status, 400);
   });
 
-  it('should reject login with invalid credentials', (done) => {
-    chai.request(app)
+  it('should return 400 if password is invalid', async () => {
+    const res = await request(app)
       .post('/login.html')
-      .send({
-        email: 'invalid@example.com',
-        password: 'wrongpassword'
-      })
-      .end((err, res) => {
-        expect(res).to.have.status(401); // Assuming invalid login returns status code 401
-        // Add more assertions as needed
-        done();
-      });
+      .send({ email: 'valid@example.com', password: 'short' });
+    assert.strictEqual(res.status, 400);
   });
 
-  it('should display error message for empty email field', (done) => {
-    chai.request(app)
+  it('should return 200 if email and password are valid', async () => {
+    const res = await request(app)
       .post('/login.html')
-      .send({
-        email: '',
-        password: 'password123'
-      })
-      .end((err, res) => {
-        expect(res.text).to.include('Email is required'); // Assuming the server returns an error message
-        // Add more assertions as needed
-        done();
-      });
+      .send({ email: 'valid@example.com', password: 'validpassword' });
+    assert.strictEqual(res.status, 200);
   });
 
   // Add more test cases as needed
