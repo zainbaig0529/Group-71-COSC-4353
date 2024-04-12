@@ -1,16 +1,15 @@
-// Import necessary modules
+// registration.test.js
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const app = require('./app'); // Assuming your server is defined in app.js
+const { expect } = chai;
 
-// Configure Chai
 chai.use(chaiHttp);
-const expect = chai.expect;
 
-// Describe the test suite
 describe('User Registration', () => {
-  // Test case for successful registration
   it('should register a new user with valid input data', (done) => {
-    chai.request('http://localhost:3000') // Replace with your server URL
+    chai.request(app)
       .post('/registration.html')
       .send({
         email: 'test@example.com',
@@ -24,9 +23,8 @@ describe('User Registration', () => {
       });
   });
 
-  // Test case for registration with missing email field
   it('should reject registration with missing email field', (done) => {
-    chai.request('http://localhost:3000') // Replace with your server URL
+    chai.request(app)
       .post('/registration.html')
       .send({
         password: 'password123',
@@ -39,4 +37,5 @@ describe('User Registration', () => {
       });
   });
 
+  // Add more test cases as needed
 });
