@@ -1,6 +1,11 @@
-const assert = require('assert');
-const request = require('supertest');
-const app = require('./app.js');  // Path to your Express application file
+// Import necessary modules
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const app = require('./app.js'); // Update file extension to .js
+
+// Configure Chai
+chai.use(chaiHttp);
+const { expect } = chai;
 
 describe('POST /login.html', () => {
   it('should return 400 if email is invalid', async () => {

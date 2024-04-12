@@ -1,7 +1,7 @@
 // Import necessary modules
-import chai from 'chai';
-import chaiHttp from 'chai-http';
-import app from './app'; // Assuming your Express app is defined in app.js
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const app = require('./app.js'); // Update file extension to .js
 
 // Configure Chai
 chai.use(chaiHttp);
