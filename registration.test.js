@@ -1,19 +1,42 @@
-// registration.test.js
+// Import necessary modules
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 
-// Use dynamic import for chai module
-import('chai').then(chai => {
-    const expect = chai.expect;
-  
-    describe('Registration Tests', () => {
-      it('should register a new user with valid information', () => {
-        const result = registerUser('test@example.com', 'password123');
-        expect(result).to.exist;
+// Configure Chai
+chai.use(chaiHttp);
+const expect = chai.expect;
+
+// Describe the test suite
+describe('User Registration', () => {
+  // Test case for successful registration
+  it('should register a new user with valid input data', (done) => {
+    chai.request('http://localhost:3000') // Replace with your server URL
+      .post('/registration.html')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+        confirm: 'password123'
+      })
+      .end((err, res) => {
+        expect(res).to.have.status(200); // Assuming successful registration returns status code 200
+        // Add more assertions as needed
+        done();
       });
-  
-    });
-  
-  }).catch(error => {
-    // Handle any errors that occur during dynamic import
-    console.error('Error loading chai:', error);
   });
-  
+
+  // Test case for registration with missing email field
+  it('should reject registration with missing email field', (done) => {
+    chai.request('http://localhost:3000') // Replace with your server URL
+      .post('/registration.html')
+      .send({
+        password: 'password123',
+        confirm: 'password123'
+      })
+      .end((err, res) => {
+        expect(res).to.have.status(400); // Assuming missing email field returns status code 400
+        // Add more assertions as needed
+        done();
+      });
+  });
+
+});
