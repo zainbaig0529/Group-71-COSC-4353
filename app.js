@@ -3,6 +3,15 @@ var bodyParser=require("body-parser");
 const app = express();
 const PORT = 3000;
 const {body, validationResult} = require('express-validator');
+//create connection to MySQL
+const mysql = require('mysql')
+const connection = mysql.createConnection({
+  host: 'group-71-cosc-4353.c902yu2q8xbp.us-east-2.rds.amazonaws.com',
+  user: 'admin',
+  password: 'cosc4353',
+  database: 'Group_71_COSC_4353'
+})
+connection.connect()
 
 app.set('view engine','ejs');
 
