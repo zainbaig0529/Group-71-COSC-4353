@@ -1,6 +1,6 @@
 const assert = require('assert');
 const request = require('supertest');
-const app = require('../app.js'); // Path to your Express application file
+const app = require('./app.js');  // Path to your Express application file
 
 describe('POST /login.html', () => {
   it('should return 400 if email is invalid', async () => {
