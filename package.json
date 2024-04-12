@@ -6,7 +6,7 @@
   "type": "module", 
   "scripts": {
     "dev": "npm run development",
-    "test": "mocha --require esm '*.test.js'"
+    "test": "mocha --require esm '*.test.cjs'"
   },
   "repository": {
     "type": "git",
