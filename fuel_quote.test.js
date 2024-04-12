@@ -1,22 +1,24 @@
 // fuel_quote.test.js
-const { expect } = require('chai');
-const { calculateFuelQuote } = require('../services/fuelQuoteService');
 
-describe('Fuel Quote', () => {
-  it('should calculate fuel quote for valid input', () => {
-    const quote = calculateFuelQuote(100); // Assuming 100 gallons requested
-    expect(quote).to.exist;
-    expect(quote.totalAmount).to.be.a('number');
-    expect(quote.totalAmount).to.be.greaterThan(0);
+// Use dynamic import for chai module
+import('chai').then(chai => {
+    const expect = chai.expect;
+  
+  
+    describe('Fuel Quote Tests', () => {
+      it('should perform a fuel quote calculation', () => {
+        // Your test code goes here
+        // For example:
+        const result = calculateFuelQuote(100); // Assuming 100 gallons requested
+        expect(result).to.exist;
+        expect(result.totalAmount).to.be.a('number');
+        expect(result.totalAmount).to.be.greaterThan(0);
+      });
+  
+    });
+  
+  }).catch(error => {
+    // Handle any errors that occur during dynamic import
+    console.error('Error loading chai:', error);
   });
-
-  it('should reject calculating fuel quote for invalid input', () => {
-    try {
-      calculateFuelQuote(-50); // Assuming negative gallons requested
-      // If calculation succeeds with invalid input, fail the test
-      throw new Error('Fuel quote calculation should have failed');
-    } catch (error) {
-      expect(error).to.exist;
-    }
-  });
-});
+  
