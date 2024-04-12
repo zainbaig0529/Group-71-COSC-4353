@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "group project",
   "main": "index.js",
+  "type": "module", 
   "scripts": {
     "dev": "npm run development",
     "test": "mocha --require esm '*.test.js'"
@@ -30,3 +31,5 @@
     "supertest": "^6.3.4"
   }
 }
+
+
