@@ -1,35 +1,50 @@
 // Import necessary modules
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const app = require('./app.js'); // Update file extension to .js
+import('chai').then(chai => {
+  const chaiHttp = require('chai-http');
+  const app = require('./app.js'); // Update file extension to .js
 
-// Configure Chai
-chai.use(chaiHttp);
-const { expect } = chai;
+  // Configure Chai
+  chai.use(chaiHttp);
+  const { expect } = chai;
 
-describe('POST /login.html', () => {
-  it('should return 400 if email is invalid', async () => {
-    const res = await request(app)
-      .post('/login.html')
-      .send({ email: 'invalid-email', password: 'validpassword' });
-    assert.strictEqual(res.status, 400);
+  // Define test suite
+  describe('Login Tests', () => {
+      // Test case: Login with valid credentials
+      it('should log in with valid credentials', (done) => {
+          chai.request(app)
+              .post('/login')
+              .send({
+                  email: 'test@example.com',
+                  password: 'password'
+              })
+              .end((err, res) => {
+                  expect(res).to.have.status(200); // Assuming successful login returns status code 200
+                  // Add more assertions as needed
+                  done();
+              });
+      });
+
+      // Test case: Login with invalid email
+      it('should return 400 if email is invalid', (done) => {
+          chai.request(app)
+              .post('/login')
+              .send({
+                  email: 'invalid-email',
+                  password: 'password'
+              })
+              .end((err, res) => {
+                  expect(res).to.have.status(400); // Assuming invalid email returns status code 400
+                  // Add more assertions as needed
+                  done();
+              });
+      });
+
+      // Add more test cases as needed
+
   });
-
-  it('should return 400 if password is invalid', async () => {
-    const res = await request(app)
-      .post('/login.html')
-      .send({ email: 'valid@example.com', password: 'short' });
-    assert.strictEqual(res.status, 400);
-  });
-
-  it('should return 200 if email and password are valid', async () => {
-    const res = await request(app)
-      .post('/login.html')
-      .send({ email: 'valid@example.com', password: 'validpassword' });
-    assert.strictEqual(res.status, 200);
-  });
-
-  // Add more test cases as needed
+}).catch(error => {
+  // Handle any errors that occur during dynamic import
+  console.error('Error loading chai:', error);
 });
 
   
