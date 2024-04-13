@@ -3,15 +3,21 @@ var bodyParser=require("body-parser");
 const app = express();
 const PORT = 3000;
 const {body, validationResult} = require('express-validator');
+
 //create connection to MySQL
 const mysql = require('mysql')
-const connection = mysql.createConnection({
+const database = mysql.createConnection({
   host: 'group-71-cosc-4353.c902yu2q8xbp.us-east-2.rds.amazonaws.com',
   user: 'admin',
   password: 'cosc4353',
   database: 'Group_71_COSC_4353'
 })
-connection.connect()
+
+database.connect(function(err)
+{
+	if(err) throw err;
+	console.log("Database connection successful!");
+});
 
 app.set('view engine','ejs');
 
@@ -42,11 +48,22 @@ app.post('/login.html',
 		});
 	}
 
-	res.status(200).json(
+	var email = req.body.email;
+	var password = req.body.password;
+	var query = "SELECT Username, Password FROM UserCredentials WHERE Username=" + email + " AND Password=" + password;
+
+	database.query(query, function(err, result)
 	{
-		success: true,
-		message: 'Login Successful',
-	})
+		if(err) throw err;
+
+		if(result[0].Username == "" || result[0].Password == "")
+		{
+			console.log("not found");
+			res.redirect('/login.html');
+		}
+
+		console.log("successfully found record");
+	});
 
 	//Will send to database when set up. For now, checks if data is in valid formats.
 });
@@ -65,12 +82,19 @@ app.post('/registration.html',
         });
     }
 
-    res.status(200).json(
+
+	var username = req.body.email;
+    var password = req.body.password;
+    var query = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', MD5('" + password + "'))";
+
+    database.query(query, function(err, result)
     {
-        success: true,
-        message: 'Registration Successful',
-    })
-  //This is where we will send the data from the registration page to the backend.
+        if(err) throw err;
+        console.log("Values added to user credentials table successfully");
+    });
+
+	res.redirect('/login.html');
+	
 });
 
 
@@ -93,13 +117,6 @@ app.post('/profile_management.html',
         });
     }
 
-    res.status(200).json(
-    {
-        success: true,
-        message: 'All data valid',
-    })
-
-    //Will send to database when set up. For now, checks if data is in valid formats.
 });
 
 app.post('/fuel_quote_form.html',
