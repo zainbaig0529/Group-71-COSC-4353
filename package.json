@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "group project",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "npm run development",
     "test": "commonjs"
