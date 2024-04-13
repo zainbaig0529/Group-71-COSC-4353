@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run development",
-    "test": "jest"
+    "test": "commonjs"
   },
   "repository": {
     "type": "git",
