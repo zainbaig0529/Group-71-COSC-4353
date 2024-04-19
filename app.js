@@ -131,11 +131,11 @@ app.post('/fuel_quote_form.html',
             });
         }
 
-        const { gallonsRequested, outOfState, newClient } = req.body;
+        const { GallonsRequested, ClientoutOfState,ClientNew } = req.body;
 
         // Insert fuel quote data into the database
-        const query = "INSERT INTO FuelQuote (gallonsRequested, outOfState, newClient) VALUES (?, ?, ?)";
-        const values = [gallonsRequested, outOfState, newClient];
+        const query = "INSERT INTO FuelQuote (GallonsRequested, ClientOutOfState, ClientNew) VALUES (?, ?, ?)";
+        const values = [GallonsRequested, ClientoutOfState, ClientNew];
 
         database.query(query, values, function (err, result) {
             if (err) {
