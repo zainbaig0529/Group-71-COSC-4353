@@ -98,13 +98,13 @@ app.post('/registration.html',
 });
 
 app.post('/profile_management.html',
-    body('firstName').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
-    body('lastName').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
-    body('address1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
-    body('address2').isLength({ max: 100 }).withMessage('Invalid address 2'),
-    body('city').isLength({ min: 1, max: 100 }).withMessage('Invalid city'),
-    body('state').notEmpty().withMessage('State is required'),
-    body('zipcode').isNumeric().isLength({ min: 5, max: 9 }).withMessage('Invalid zipcode. Must be between 5 and 9 digits'),
+    body('NameFirst').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
+    body('NameLast').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
+    body('ClientAddress1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
+    body('ClientAddress2').isLength({ max: 100 }).withMessage('Invalid address 2'),
+    body('ClientCity').isLength({ min: 1, max: 100 }).withMessage('Invalid city'),
+    body('ClientState').notEmpty().withMessage('State is required'),
+    body('ClientZip').isNumeric().isLength({ min: 5, max: 9 }).withMessage('Invalid zipcode. Must be between 5 and 9 digits'),
 
     function (req, res) {
         const errors = validationResult(req);
@@ -116,18 +116,11 @@ app.post('/profile_management.html',
             });
         }
 
-        const { firstName, lastName, address1, address2, city, state, zipcode } = req.body;
+        const { NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip } = req.body;
 
-        console.log("First Name:", firstName);
-        console.log("Last Name:", lastName);
-        console.log("Address 1:", address1);
-        console.log("Address 2:", address2);
-        console.log("City:", city);
-        console.log("State:", state);
-        console.log("Zipcode:", zipcode);
 
         const query = "INSERT INTO ClientInformation (NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        const values = [firstName, lastName, address1, address2 || null, city, state, zipcode];
+        const values = [NameFirst, NameLast, ClientAddress1, ClientAddress2 || null, ClientCity, ClientState, ClientZip];
 
         database.query(query, values, function (err, result) {
             if (err) {
