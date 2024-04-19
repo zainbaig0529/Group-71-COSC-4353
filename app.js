@@ -120,7 +120,7 @@ app.post('/profile_management.html',
 });
 
 app.post('/fuel_quote_form.html',
-    body('gallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
+    body('GallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
     function (req, res) {
         const errors = validationResult(req);
 
@@ -131,11 +131,15 @@ app.post('/fuel_quote_form.html',
             });
         }
 
-        const { GallonsRequested, ClientoutOfState,ClientNew } = req.body;
+        const { GallonsRequested, ClientOutOfState, ClientNew } = req.body;
+
+        console.log("GallonsRequested:", GallonsRequested);
+        console.log("ClientOutOfState:", ClientOutOfState);
+        console.log("ClientNew:", ClientNew);
 
         // Insert fuel quote data into the database
         const query = "INSERT INTO FuelQuote (GallonsRequested, ClientOutOfState, ClientNew) VALUES (?, ?, ?)";
-        const values = [GallonsRequested, ClientoutOfState, ClientNew];
+        const values = [GallonsRequested, ClientOutOfState, ClientNew];
 
         database.query(query, values, function (err, result) {
             if (err) {
