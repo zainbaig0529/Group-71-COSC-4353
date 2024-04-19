@@ -120,30 +120,53 @@ app.post('/profile_management.html',
 });
 
 app.post('/fuel_quote_form.html',
-		body('gallonsRequested').isLength({min:1}),
-		body('deliveryDate').isISO8601(),
-		function(req, res){
-	const errors = validationResult(req)
-;
-	if(!errors.isEmpty())
-	{
-		return res.status(400).json(
-		{
-			success: false,
-			errors:errors.array()
-		});
-	}
-	
-	var total_due = req.body.gallonsRequested * 1.25
-	const data = {
-	price_per_gallon: 1.25,
-	total_amount_due: total_due,
-	};
-	
-	res.render('fuel_quote_form_results', data);
+    body('gallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
+    body('deliveryDate').isISO8601().toDate(),
+    function (req, res) {
+        const errors = validationResult(req);
 
-    //Will send to database when set up. For now, checks if data is in valid formats.
-});
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                errors: errors.array()
+            });
+        }
+
+        const { gallonsRequested, deliveryDate } = req.body;
+
+        // Calculate total due based on gallons requested (assuming $1.25 per gallon)
+        const pricePerGallon = 1.25;
+        const totalDue = parseFloat(gallonsRequested) * pricePerGallon;
+
+        // Format delivery date in MySQL compatible format (YYYY-MM-DD)
+        const formattedDeliveryDate = deliveryDate.toISOString().split('T')[0];
+
+        // Insert fuel quote data into the database
+        const query = "INSERT INTO FuelQuotes (gallonsRequested, deliveryDate, totalDue) VALUES (?, ?, ?)";
+        const values = [gallonsRequested, formattedDeliveryDate, totalDue];
+
+        database.query(query, values, function (err, result) {
+            if (err) {
+                console.error("Error inserting fuel quote data:", err);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error inserting fuel quote data'
+                });
+            }
+            console.log("Fuel quote data added successfully");
+            // Send response with fuel quote data
+            return res.status(200).json({
+                success: true,
+                message: 'Fuel quote submitted successfully',
+                data: {
+                    gallonsRequested: gallonsRequested,
+                    deliveryDate: formattedDeliveryDate,
+                    totalDue: totalDue
+                }
+            });
+        });
+    });
+
 
 
 app.listen(3000, function () {
