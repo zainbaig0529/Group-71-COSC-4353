@@ -9,25 +9,25 @@
 <body>
 
 <div class="container">
-    <form action="profile_management.html" method="post">
+    <form action="/profile_management.html" method="post">
 		<h2>Client Profile Management</h2>
         <label for="firstName">First Name:</label><br>
-        <input type="text" id="firstName" name="firstName" minlength="1" maxlength="50" required><br><br>
+        <input type="text" id="firstName" name="NameFirst" minlength="1" maxlength="50" required><br><br>
 
 		<label for="lastName">Last Name:</label><br>
-        <input type="text" id="lastName" name="lastName" minlength="1" maxlength="50" required><br><br>
+        <input type="text" id="lastName" name="NameLast" minlength="1" maxlength="50" required><br><br>
 
         <label for="address1">Address 1:</label><br>
-        <input type="text" id="address1" name="address1" minlength="1" maxlength="100" required><br><br>
+        <input type="text" id="address1" name="ClientAddress1" minlength="1" maxlength="100" required><br><br>
 
         <label for="address2">Address 2:</label><br>
-        <input type="text" id="address2" name="address2" maxlength="100"><br><br>
+        <input type="text" id="address2" name="ClientAddress2" maxlength="100"><br><br>
 
         <label for="city">City:</label><br>
-        <input type="text" id="city" name="city" minlength="1" maxlength="100" required><br><br>
+        <input type="text" id="city" name="ClientCity" minlength="1" maxlength="100" required><br><br>
 
         <label for="state">State:</label><br>
-        <select id="state" name="state" required>
+        <select id="state" name="ClientState" required>
             <option value="">Select State</option>
             <option value="AL">Alabama</option>
             <option value="AK">Alaska</option>
@@ -82,7 +82,7 @@
         </select><br><br>
 
         <label for="zipcode">Zipcode:</label><br>
-        <input type="text" id="zipcode" name="zipcode" pattern="[0-9]{5,9}" maxlength="9" required><br>
+        <input type="text" id="zipcode" name="ClientZip" pattern="[0-9]{5,9}" maxlength="9" required><br>
 
         <input type="submit" value="Submit">
     </form>
