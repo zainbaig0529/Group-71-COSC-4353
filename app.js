@@ -131,15 +131,11 @@ app.post('/fuel_quote_form.html',
             });
         }
 
-        const { gallonsRequested } = req.body;
-
-        // Calculate total due based on gallons requested (assuming $1.25 per gallon)
-        const pricePerGallon = 1.25;
-        const totalDue = parseFloat(gallonsRequested) * pricePerGallon;
+        const { gallonsRequested, outOfState, newClient } = req.body;
 
         // Insert fuel quote data into the database
-        const query = "INSERT INTO FuelQuotes (gallonsRequested, totalDue) VALUES (?, ?)";
-        const values = [gallonsRequested, totalDue];
+        const query = "INSERT INTO FuelQuote (gallonsRequested, outOfState, newClient) VALUES (?, ?, ?)";
+        const values = [gallonsRequested, outOfState, newClient];
 
         database.query(query, values, function (err, result) {
             if (err) {
@@ -150,17 +146,15 @@ app.post('/fuel_quote_form.html',
                 });
             }
             console.log("Fuel quote data added successfully");
-            // Send response with fuel quote data
+            // Send response with success message
             return res.status(200).json({
                 success: true,
-                message: 'Fuel quote submitted successfully',
-                data: {
-                    gallonsRequested: gallonsRequested,
-                    totalDue: totalDue
-                }
+                message: 'Fuel quote submitted successfully'
             });
         });
     });
+
+
 
 
 
