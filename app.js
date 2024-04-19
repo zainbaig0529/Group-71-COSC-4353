@@ -121,6 +121,7 @@ app.post('/profile_management.html',
 
 app.post('/fuel_quote_form.html',
     body('gallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
+    body('address').notEmpty().withMessage('Address is required'),
     body('deliveryDate').isISO8601().toDate(),
     function (req, res) {
         const errors = validationResult(req);
@@ -132,7 +133,7 @@ app.post('/fuel_quote_form.html',
             });
         }
 
-        const { gallonsRequested, deliveryDate } = req.body;
+        const { gallonsRequested, address, deliveryDate } = req.body;
 
         // Calculate total due based on gallons requested (assuming $1.25 per gallon)
         const pricePerGallon = 1.25;
@@ -142,8 +143,8 @@ app.post('/fuel_quote_form.html',
         const formattedDeliveryDate = deliveryDate.toISOString().split('T')[0];
 
         // Insert fuel quote data into the database
-        const query = "INSERT INTO FuelQuotes (gallonsRequested, deliveryDate, totalDue) VALUES (?, ?, ?)";
-        const values = [gallonsRequested, formattedDeliveryDate, totalDue];
+        const query = "INSERT INTO FuelQuotes (gallonsRequested, address, deliveryDate, totalDue) VALUES (?, ?, ?, ?)";
+        const values = [gallonsRequested, address, formattedDeliveryDate, totalDue];
 
         database.query(query, values, function (err, result) {
             if (err) {
@@ -160,12 +161,14 @@ app.post('/fuel_quote_form.html',
                 message: 'Fuel quote submitted successfully',
                 data: {
                     gallonsRequested: gallonsRequested,
+                    address: address,
                     deliveryDate: formattedDeliveryDate,
                     totalDue: totalDue
                 }
             });
         });
     });
+
 
 
 
