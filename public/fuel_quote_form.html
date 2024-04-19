@@ -8,19 +8,26 @@
 </head>
 <body>
     <div class="container">
-        <form action="fuel_quote_form.html" method="post">
-			<h1>Fuel Quote Form</h1>
+        <form action="/fuel_quote_form.html" method="post">
+            <h1>Fuel Quote Form</h1>
             <label for="gallonsRequested">Gallons Requested:</label><br>
             <input type="number" id="gallonsRequested" name="gallonsRequested" min="1" required><br><br>
 
-            <label for="deliveryAddress">Delivery Address:</label><br>
-            <input type="text" id="deliveryAddress" name="deliveryAddress" minlength="1" maxlength="100" readonly><br><br><!-- Non-editable field -->
+            <label for="outOfState">Are you out of state?</label><br>
+            <select id="outOfState" name="outOfState">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select><br><br>
 
-            <label for="deliveryDate">Delivery Date:</label><br>
-            <input type="date" id="deliveryDate" name="deliveryDate"><br><br>
+            <label for="newClient">Are you a new client?</label><br>
+            <select id="newClient" name="newClient">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select><br><br>
 
             <button type="submit">Submit</button>
         </form>
     </div>
 </body>
 </html>
+
