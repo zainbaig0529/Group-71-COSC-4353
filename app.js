@@ -1,23 +1,53 @@
 const express = require('express');
-var bodyParser=require("body-parser");
+var bodyParser = require("body-parser");
 const app = express();
 const PORT = 3000;
 const {body, validationResult} = require('express-validator');
+const session = require('express-session');
+const https = require('https');
+const fs = require('fs');
+const mysql = require('mysql');
+const MySQLStore = require('express-mysql-session')(session);
+const {v1: uuidv1} = require('uuid');
 
 //create connection to MySQL
-const mysql = require('mysql')
-const database = mysql.createConnection({
-  host: 'group-71-cosc-4353.c902yu2q8xbp.us-east-2.rds.amazonaws.com',
-  user: 'admin',
-  password: 'cosc4353',
-  database: 'Group_71_COSC_4353'
-})
+const options = {
+	host: 'group-71-cosc-4353.c902yu2q8xbp.us-east-2.rds.amazonaws.com',
+	user:'admin',
+	password: 'cosc4353',
+	database: 'Group_71_COSC_4353'
+};
 
+const database = mysql.createConnection(options);
 database.connect(function(err)
 {
 	if(err) throw err;
 	console.log("Database connection successful!");
 });
+
+//Initialise session management
+const sessionStore = new MySQLStore(
+						 {
+						 	clearExpired: true,
+							endConnectionOnClose: true,
+							disableTouch: false
+						 }, database);
+
+app.use(session(
+{
+	genid: function(req)
+	{
+		return uuidv1();
+	},
+	name: 'Cougarville Gas Cookie',
+	secret: 'change me later',
+	store: sessionStore,
+	resave: false,
+	saveUninitialized: false,
+	cookie: {secure: true,
+			 httpOnly: true
+			}
+}));
 
 app.set('view engine','ejs');
 
@@ -226,6 +256,11 @@ app.post('/fuel_quote_form.html',
 
 
 
-app.listen(3000, function () {
+https.createServer(
+	{
+		key: fs.readFileSync("ssl_certs/key.pem"),
+		cert: fs.readFileSync("ssl_certs/cert.pem"),
+	},
+	app).listen(PORT, function () {
   console.log("Server is running on localhost3000");
 });
