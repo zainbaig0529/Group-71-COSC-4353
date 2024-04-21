@@ -56,18 +56,61 @@ app.use(express.static('public'));
 app.use(express.static('assets'));
 app.use(express.static('src'));
 
+
+//FIX: PREVENT USERS FROM LOADING FILES DIRECTLY (ex. https://localhost:3000/homepage.html SHOULD RESULT IN EITHER A REDIRECT OR 403)
+app.use(function(req, res, next)
+{
+	console.log(req.url.search(".html"));
+	if(req.url.search(".html") != -1)
+	{
+		res.send(403, "Forbidden");
+	}
+});
+
 //middleware for login page
 app.use(bodyParser.urlencoded({extended:true}));
 
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/public/homepage.html");
+/*function isAuthenticated (req, res, next) {
+	if(req.session.user)
+	{
+		next();
+	}
+	else
+	{
+		next('route');
+	}
+}*/
+
+app.get("/user_homepage",  function (req, res) {
+	
+	if(req.session.user)
+	{
+		res.sendFile(__dirname + "/public/homepage_session.html");
+	}
+	else
+	{
+		res.redirect("/default_homepage");
+	}
 });
 
-app.get("/homepage_session.html", function (req, res) {
-	res.sendFile(__dirname + "/public/homepage_session.html");
+app.get("/default_homepage", function (req, res) {
+	
+	if(!req.session.user)
+	{
+		res.sendFile(__dirname + "/public/homepage.html");
+	}
+	else
+	{
+		res.redirect("/user_homepage");
+	}
 });
 
-app.post('/login.html',
+app.get("/", function(req, res)
+{
+	res.redirect("/default_homepage");
+});
+
+app.post('/login',
 		body('email').isEmail().withMessage('Invalid email'), 
 		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters.'),
 		function (req, res) {
@@ -88,22 +131,44 @@ app.post('/login.html',
 
 	database.query(query, function(err, result)
 	{
-		if(err) throw err;
+		if(err)
+		{
+			throw err;
+		}
 
 		if(result[0].Username == "" || result[0].Password == "")
 		{
 			console.log("Data not found in database.");
-			res.redirect('/login.html');
+			res.redirect('/login');
 		}
 
 		console.log("successfully found record");
 	});
 	
-	req.session.user = email;
-	//res.redirect(');
+	//Regenerate the session to give it a new id
+	req.session.regenerate(function(err)
+	{
+		if(err)
+		{
+			next(err);
+		}
+		//attach user's email to session
+		req.session.user = email;
+		
+		//save session before redirect
+		req.session.save(function(err)
+		{
+			if(err)
+			{
+				return next(err);
+			}
+			
+			res.redirect('/user_homepage');
+		});
+	});
 });
 
-app.post('/registration.html',
+app.post('/registration',
     body('email').isEmail().withMessage('Invalid email'),
     body('password').isLength({ min: 8 }).withMessage('Invalid password. Must be at least 8 characters'),
     function (req, res) {
@@ -128,7 +193,7 @@ app.post('/registration.html',
         console.log("Values added to user credentials table successfully");
     });
 
-	res.redirect('/login.html');
+	res.redirect('/login');
 1	
 });
 
