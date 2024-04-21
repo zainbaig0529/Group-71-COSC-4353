@@ -63,9 +63,13 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + "/public/homepage.html");
 });
 
+app.get("/homepage_session.html", function (req, res) {
+	res.sendFile(__dirname + "/public/homepage_session.html");
+});
+
 app.post('/login.html',
 		body('email').isEmail().withMessage('Invalid email'), 
-		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters'),
+		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters.'),
 		function (req, res) {
     const errors = validationResult(req);
 
@@ -88,14 +92,15 @@ app.post('/login.html',
 
 		if(result[0].Username == "" || result[0].Password == "")
 		{
-			console.log("not found");
+			console.log("Data not found in database.");
 			res.redirect('/login.html');
 		}
 
 		console.log("successfully found record");
 	});
-
-	//Will send to database when set up. For now, checks if data is in valid formats.
+	
+	req.session.user = email;
+	//res.redirect(');
 });
 
 app.post('/registration.html',
@@ -124,7 +129,7 @@ app.post('/registration.html',
     });
 
 	res.redirect('/login.html');
-	
+1	
 });
 
 app.post('/profile_management.html',
