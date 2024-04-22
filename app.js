@@ -9,6 +9,7 @@ const fs = require('fs');
 const mysql = require('mysql');
 const MySQLStore = require('express-mysql-session')(session);
 const {v1: uuidv1} = require('uuid');
+const md5 = require('md5');
 
 //create connection to MySQL
 const options = {
@@ -122,16 +123,34 @@ app.get('/register', function(req, res)
 	}
 });
 
-// process info sent from pages on request
-
-app.post('/user_homepage')
+app.get('/logout', function(req, res)
 {
-	//log a user out and destroy their session data when they click log out
-}
+	req.session.user = null;
+	req.session.save(function(err)
+	{
+		if(err)
+		{
+			next(err);
+		}
+
+		req.session.regenerate(function (err)
+		{
+			if(err)
+			{
+				next(err);
+			}
+
+			res.redirect("/default_homepage");
+		});
+	});
+});
+
+//process info sent from pages
+
 app.post('/login',
 		body('email').isEmail().withMessage('Invalid email'), 
 		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters.'),
-		function (req, res) {
+		function (req, res, next) {
     const errors = validationResult(req);
 
 	if(!errors.isEmpty())
@@ -145,45 +164,51 @@ app.post('/login',
 
 	var email = req.body.email;
 	var password = req.body.password;
-	var query = "SELECT Username, Password FROM UserCredentials WHERE Username='" + email + "' AND Password=MD5('" + password + "')";
+	var query = "SELECT Username, Password FROM UserCredentials WHERE Username='" + email + "' AND Password='" + password + "'";
 
-	database.query(query, function(err, result)
+	var results = database.query(query, function(err, results, fields)
 	{
+		//console.log(email + ", " + password + ", " + results[0].Username + ", " + results[0].Password);
 		if(err)
 		{
 			throw err;
 		}
 
-		if(result[0].Username == "" || result[0].Password == "")
+		if(results.length == 0)
 		{
 			console.log("Data not found in database.");
 			res.redirect('/login');
 		}
+		else
+		{
+			
+			//Regenerate the session to give it a new id
+			req.session.regenerate(function(err)
+			{
+				if(err)
+				{
+					next(err);
+				}
 
-		console.log("successfully found record");
+				//attach user's email to session
+				req.session.user = email;
+		
+				//save session before redirect
+				req.session.save(function(err)
+				{
+					if(err)
+					{
+						next(err);
+					}
+				
+					res.redirect('/user_homepage');
+				});
+			});
+			console.log("successfully found record");
+		}
 	});
 	
-	//Regenerate the session to give it a new id
-	req.session.regenerate(function(err)
-	{
-		if(err)
-		{
-			next(err);
-		}
-		//attach user's email to session
-		req.session.user = email;
-		
-		//save session before redirect
-		req.session.save(function(err)
-		{
-			if(err)
-			{
-				return next(err);
-			}
-			
-			res.redirect('/user_homepage');
-		});
-	});
+	
 });
 
 app.post('/register',
@@ -203,7 +228,7 @@ app.post('/register',
 
 	var username = req.body.email;
     var password = req.body.password;
-    var query = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', MD5('" + password + "'))";
+    var query = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', '" + password + "')";
 
     database.query(query, function(err, result)
     {
