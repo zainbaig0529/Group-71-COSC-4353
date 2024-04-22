@@ -56,31 +56,9 @@ app.use(express.static('public'));
 app.use(express.static('assets'));
 app.use(express.static('src'));
 
-
-//FIX: PREVENT USERS FROM LOADING FILES DIRECTLY (ex. https://localhost:3000/homepage.html SHOULD RESULT IN EITHER A REDIRECT OR 403)
-app.use(function(req, res, next)
-{
-	console.log(req.url.search(".html"));
-	if(req.url.search(".html") != -1)
-	{
-		res.send(403, "Forbidden");
-	}
-});
-
-//middleware for login page
 app.use(bodyParser.urlencoded({extended:true}));
 
-/*function isAuthenticated (req, res, next) {
-	if(req.session.user)
-	{
-		next();
-	}
-	else
-	{
-		next('route');
-	}
-}*/
-
+//Renders a user page if signed in
 app.get("/user_homepage",  function (req, res) {
 	
 	if(req.session.user)
@@ -93,6 +71,7 @@ app.get("/user_homepage",  function (req, res) {
 	}
 });
 
+//renders the default page when not signed in
 app.get("/default_homepage", function (req, res) {
 	
 	if(!req.session.user)
@@ -105,11 +84,50 @@ app.get("/default_homepage", function (req, res) {
 	}
 });
 
+//redirect from the root page based on user authentication
 app.get("/", function(req, res)
 {
-	res.redirect("/default_homepage");
+	if(!req.session.user)
+	{
+		res.redirect("/default_homepage");
+	}
+	else
+	{
+		res.redirect("/user_homepage");
+	}
 });
 
+// render pages on request
+app.get('/login', function(req, res)
+{
+	if(!req.session.user)
+	{
+		res.sendFile(__dirname + "/public/login.html");
+	}
+	else
+	{
+		res.redirect("/user_homepage");
+	}
+});
+
+app.get('/register', function(req, res)
+{
+	if(!req.session.user)
+	{
+		res.sendFile(__dirname + "/public/registration.html");
+	}
+	else
+	{
+		res.redirect("/user_homepage");
+	}
+});
+
+// process info sent from pages on request
+
+app.post('/user_homepage')
+{
+	//log a user out and destroy their session data when they click log out
+}
 app.post('/login',
 		body('email').isEmail().withMessage('Invalid email'), 
 		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters.'),
@@ -127,7 +145,7 @@ app.post('/login',
 
 	var email = req.body.email;
 	var password = req.body.password;
-	var query = "SELECT Username, Password FROM UserCredentials WHERE Username=" + email + " AND Password=" + password;
+	var query = "SELECT Username, Password FROM UserCredentials WHERE Username='" + email + "' AND Password=MD5('" + password + "')";
 
 	database.query(query, function(err, result)
 	{
@@ -168,7 +186,7 @@ app.post('/login',
 	});
 });
 
-app.post('/registration',
+app.post('/register',
     body('email').isEmail().withMessage('Invalid email'),
     body('password').isLength({ min: 8 }).withMessage('Invalid password. Must be at least 8 characters'),
     function (req, res) {
@@ -241,7 +259,7 @@ app.post('/profile_management.html',
 
 
 
-/*app.post('/profile_management.html',
+/*app.post('/profile_management',
     body('firstName').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
     body('lastName').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
     body('address1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
@@ -282,8 +300,7 @@ app.post('/profile_management.html',
         });
     }); */
 
-
-app.post('/fuel_quote_form.html',
+app.post('/fuel_quote_form',
     body('GallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
     function (req, res) {
         const errors = validationResult(req);
@@ -321,10 +338,6 @@ app.post('/fuel_quote_form.html',
             });
         });
     });
-
-
-
-
 
 https.createServer(
 	{
