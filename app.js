@@ -123,6 +123,8 @@ app.get('/register', function(req, res)
 	}
 });
 
+//removes a user session from the database, and returns a user to the default homepage.
+//In that order.
 app.get('/logout', function(req, res)
 {
 	req.session.user = null;
@@ -143,6 +145,44 @@ app.get('/logout', function(req, res)
 			res.redirect("/default_homepage");
 		});
 	});
+});
+
+app.get('/fuel_quote_form', function(req, res)
+{
+	if(req.session.user)
+	{
+		res.sendFile(__dirname + "/public/fuel_quote_form.html");
+	}
+	else
+	{
+		res.redirect("/default_homepage");
+	}
+});
+
+app.get('/fuel_quote_history', function(req, res)
+{
+	
+	if(req.session.user)
+	{
+		res.sendFile(__dirname + "/public/fuel_quote_history.html");
+	}
+	else
+	{
+		res.redirect("/default_homepage");
+	}
+});
+
+app.get('/profile_management', function(req, res)
+{
+	
+	if(req.session.user)
+	{
+		res.sendFile(__dirname + "/public/profile_management.html");
+	}
+	else
+	{
+		res.redirect("/default_homepage");
+	}
 });
 
 //process info sent from pages
@@ -240,7 +280,7 @@ app.post('/register',
 1	
 });
 
-app.post('/profile_management.html',
+app.post('/profile_management',
     body('NameFirst').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
     body('NameLast').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
     body('ClientAddress1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
