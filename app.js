@@ -280,7 +280,7 @@ app.post('/register',
 1	
 });
 
-app.post('/profile_management',
+/*app.post('/profile_management',
     body('NameFirst').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
     body('NameLast').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
     body('ClientAddress1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
@@ -300,10 +300,11 @@ app.post('/profile_management',
         }
 
         const { NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip } = req.body;
+		const { UserEmail } = req.session.user;
+		//var UserID = statement.executeQuery("SELECT UserID FROM UserCredentials WHERE Username=UserEmail");
 
-
-        const query = "INSERT INTO ClientInformation (NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        const values = [NameFirst, NameLast, ClientAddress1, ClientAddress2 || null, ClientCity, ClientState, ClientZip];
+        const query = "INSERT INTO ClientInformation (ClientID, NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        const values = [UserID, NameFirst, NameLast, ClientAddress1, ClientAddress2 || null, ClientCity, ClientState, ClientZip];
 
         database.query(query, values, function (err, result) {
             if (err) {
@@ -319,12 +320,12 @@ app.post('/profile_management',
                 message: 'Client information submitted successfully'
             });
         });
-    });
+    });*/
 
 
 
 
-/*app.post('/profile_management',
+app.post('/profile_management',
     body('firstName').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
     body('lastName').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
     body('address1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
@@ -363,7 +364,7 @@ app.post('/profile_management',
                 message: 'User profile submitted successfully'
             });
         });
-    }); */
+    });
 
 app.post('/fuel_quote_form',
     body('GallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
@@ -379,17 +380,17 @@ app.post('/fuel_quote_form',
 
         var { GallonsRequested, ClientOutOfState, ClientNew, FuelRate, TotalPrice } = req.body;
 
-		var PricePerGallon;
+		var PricePerGallon = 1.50;
 		var PriceTotal;
 
 		if (ClientNew = 'yes' && ClientOutOfState == 'no')
-			PricePerGallon = 1.53;
+			PricePerGallon = PricePerGallon * 1.02;
 		else if (ClientNew = 'yes' && ClientOutOfState == 'yes')
-			PricePerGallon = 1.56;
+			PricePerGallon = PricePerGallon * 1.04;
 		else if (ClientNew = 'no' && ClientOutOfState == 'no')
-			PricePerGallon = 1.545;
+			PricePerGallon = PricePerGallon * 1.03;
 		else
-			PricePerGallon = 1.575;
+			PricePerGallon = PricePerGallon * 1.05;
 
 		if (GallonsRequested < 1000)
 			PricePerGallon = PricePerGallon * 1.03;
