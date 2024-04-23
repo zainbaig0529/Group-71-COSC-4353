@@ -377,15 +377,25 @@ app.post('/fuel_quote_form',
             });
         }
 
-        const { GallonsRequested, ClientOutOfState, ClientNew } = req.body;
+        var { GallonsRequested, ClientOutOfState, ClientNew, FuelRate, TotalPrice } = req.body;
 
-        console.log("GallonsRequested:", GallonsRequested);
-        console.log("ClientOutOfState:", ClientOutOfState);
-        console.log("ClientNew:", ClientNew);
+		var PricePerGallon;
+		var PriceTotal;
+
+		if (ClientNew = 'yes' && ClientOutOfState == 'no')
+			PricePerGallon = 1.50;
+		else if (ClientNew = 'yes' && ClientOutOfState == 'yes')
+			PricePerGallon = 1.65;
+		else if (ClientNew = 'no' && ClientOutOfState == 'no')
+			PricePerGallon = 1.80;
+		else
+			PricePerGallon = 1.95;
+
+		PriceTotal = PricePerGallon * GallonsRequested;
 
         // Insert fuel quote data into the database
-        const query = "INSERT INTO FuelQuote (GallonsRequested, ClientOutOfState, ClientNew) VALUES (?, ?, ?)";
-        const values = [GallonsRequested, ClientOutOfState, ClientNew];
+        const query = "INSERT INTO FuelQuote (GallonsRequested, ClientOutOfState, ClientNew, FuelRate, TotalPrice) VALUES (?, ?, ?, ?, ?)";
+        const values = [GallonsRequested, ClientOutOfState, ClientNew, PricePerGallon, PriceTotal];
 
         database.query(query, values, function (err, result) {
             if (err) {
