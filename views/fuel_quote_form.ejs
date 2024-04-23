@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Quote Form</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<script type="text/javascript" language="javascript">
+		//enabledSubmit inspired by https://websitemaintenance.medium.com/simple-javascript-to-disable-submit-button-until-input-fields-are-filled-in-ee9ec13906be
+		function enableSubmit()
+		{
+			let inputs = document.getElementsByClassName('required');
+			let btn1 = document.querySelector('button[type="button"]');
+			let btn2 = document.querySelector('button[type="submit"]');
+			let isValid = true;
+
+			for(var i = 0; i < inputs.length; i++)
+			{
+				let changedInput = inputs[i];
+				if(changedInput.value.trim() === "" || changedInput.value === null)
+				{
+					isValid = false;
+						break;
+				}
+			}
+				btn1.disabled = !isValid;
+				btn2.disabled = !isValid;
+		}
+	</script>
+	<div class="container">
+		<form action="/fuel_quote_form" method="post">
+			<h1>Fuel Quote Form</h1>
+			<label for="GallonsRequested">Gallons Requested:</label><br>
+			<input type="number" id="GallonsRequested" name="GallonsRequested" min="1" class="required" required oninput="enableSubmit()"><br><br>
+			
+			<label for="DeliveryAddress">Delivery Address:</label><br>
+			<input type="text" id="DeliveryAddress" name="DeliveryAddress" class="required" required oninput="enableSubmit()"><br><br>
+
+			<label for="OrderDate">Select A Delivery Date</label><br>
+			<input type="date" id="OrderDate" name="OrderDate" min="<%= minimum_date %>" class="required" required oninput="enableSubmit()"><br><br>
+			
+			<button type="button" disabled>Get Quote</button><br><br>
+			
+			<label for="SuggestedPricePerGallon">Suggested Price Per Gallon</label><br>
+			<input type="text" id="SuggestedPricePerGallon" name="SuggestedPricePerGallon" value="suggested_price_per_gallon ejs variable here" readonly><br><br>
+
+			<label for="TotalAmountDue">Total Amount Due</label><br>
+			<input type="text" id="TotalAmountDue" name="TotalAmountDue" value="total_amount_due ejs variable here" readonly>
+			
+			<button type="submit" disabled>Submit</button>
+        </form>
+    </div>
+
+	
+</body>
+</html>
+

@@ -127,6 +127,7 @@ app.get('/register', function(req, res)
 //In that order.
 app.get('/logout', function(req, res)
 {
+	// code inspired from https://expressjs.com/en/resources/middleware/session.html
 	req.session.user = null;
 	req.session.save(function(err)
 	{
@@ -151,7 +152,16 @@ app.get('/fuel_quote_form', function(req, res)
 {
 	if(req.session.user)
 	{
-		res.sendFile(__dirname + "/public/fuel_quote_form.html");
+		// code to ge today's date from https://stackoverflow.com/questions/1531093/how-do-i-get-the-current-date-in-javascript
+		var date_min = new Date();
+		var dd = String(date_min.getDate()).padStart(2,0);
+		var mm = String(date_min.getMonth() + 1).padStart(2,0);
+		var yyyy = String(date_min.getFullYear());
+
+		date_min = yyyy + "-" + mm + "-" + dd;
+
+
+		res.render(__dirname + "/views/fuel_quote_form.ejs", {minimum_date: date_min});
 	}
 	else
 	{
@@ -204,7 +214,7 @@ app.post('/login',
 
 	var email = req.body.email;
 	var password = req.body.password;
-	var query = "SELECT Username, Password FROM UserCredentials WHERE Username='" + email + "' AND Password='" + password + "'";
+	var query = "SELECT Username, Password, UserID FROM UserCredentials WHERE Username='" + email + "' AND Password='" + password + "'";
 
 	var results = database.query(query, function(err, results, fields)
 	{
@@ -221,7 +231,7 @@ app.post('/login',
 		}
 		else
 		{
-			
+			//code inspired from https://expressjs.com/en/resources/middleware/session.html
 			//Regenerate the session to give it a new id
 			req.session.regenerate(function(err)
 			{
@@ -230,8 +240,8 @@ app.post('/login',
 					next(err);
 				}
 
-				//attach user's email to session
-				req.session.user = email;
+				//attach user's ID to session
+				req.session.user = results[0].UserID;
 		
 				//save session before redirect
 				req.session.save(function(err)
