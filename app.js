@@ -383,15 +383,23 @@ app.post('/fuel_quote_form',
 		var PriceTotal;
 
 		if (ClientNew = 'yes' && ClientOutOfState == 'no')
-			PricePerGallon = 1.50;
+			PricePerGallon = 1.53;
 		else if (ClientNew = 'yes' && ClientOutOfState == 'yes')
-			PricePerGallon = 1.65;
+			PricePerGallon = 1.56;
 		else if (ClientNew = 'no' && ClientOutOfState == 'no')
-			PricePerGallon = 1.80;
+			PricePerGallon = 1.545;
 		else
-			PricePerGallon = 1.95;
+			PricePerGallon = 1.575;
+
+		if (GallonsRequested < 1000)
+			PricePerGallon = PricePerGallon * 1.03;
+		else
+			PricePerGallon = PricePerGallon * 1.02;
 
 		PriceTotal = PricePerGallon * GallonsRequested;
+
+		FuelRate = parseFloat(FuelRate.toFixed(2));
+		PriceTotal = parseFloat(PriceTotal.toFixed(2));
 
         // Insert fuel quote data into the database
         const query = "INSERT INTO FuelQuote (GallonsRequested, ClientOutOfState, ClientNew, FuelRate, TotalPrice) VALUES (?, ?, ?, ?, ?)";
