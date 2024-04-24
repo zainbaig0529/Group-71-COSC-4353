@@ -19,10 +19,11 @@
   },
   "homepage": "https://github.com/zainbaig0529/Group-71-COSC-4353#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "ejs": "^3.1.9",
     "express": "^4.18.3",
     "express-http-to-https": "^1.1.4",
-    "express-mysql-session": "^3.0.1",
+    "express-mysql-session": "^2.1.8",
     "express-session": "^1.18.0",
     "express-validator": "^7.0.1",
     "md5": "^2.3.0",
@@ -36,6 +37,6 @@
     "chai": "^5.1.0",
     "esm": "^3.2.25",
     "jest": "^29.7.0",
-    "supertest": "^6.3.4"
+    "supertest": "^7.0.0"
   }
 }

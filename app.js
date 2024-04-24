@@ -11,7 +11,11 @@ const MySQLStore = require('express-mysql-session')(session);
 const {v1: uuidv1} = require('uuid');
 const md5 = require('md5');
 
-//create connection to MySQL
+//Variables for encryption
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+//Create connection to MySQL
 const options = {
 	host: 'group-71-cosc-4353.c902yu2q8xbp.us-east-2.rds.amazonaws.com',
 	user:'admin',
@@ -195,8 +199,8 @@ app.get('/profile_management', function(req, res)
 	}
 });
 
-//process info sent from pages
 
+//process info sent from pages
 app.post('/login',
 		body('email').isEmail().withMessage('Invalid email'), 
 		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters.'),
@@ -214,11 +218,9 @@ app.post('/login',
 
 	var email = req.body.email;
 	var password = req.body.password;
-	var query = "SELECT Username, Password, UserID FROM UserCredentials WHERE Username='" + email + "' AND Password='" + password + "'";
-
-	var results = database.query(query, function(err, results, fields)
+	var query = "SELECT Username, Password FROM UserCredentials WHERE Username='" + email + "'";
+	database.query(query, async function(err, results, fields)
 	{
-		//console.log(email + ", " + password + ", " + results[0].Username + ", " + results[0].Password);
 		if(err)
 		{
 			throw err;
@@ -231,34 +233,44 @@ app.post('/login',
 		}
 		else
 		{
-			//code inspired from https://expressjs.com/en/resources/middleware/session.html
-			//Regenerate the session to give it a new id
-			req.session.regenerate(function(err)
+			var dbUser = results[0].Username;
+			var dbPass = results[0].Password;
+			var results = await bcrypt.compare(password, dbPass);
+			if(email != dbUser || results == false)
 			{
-				if(err)
-				{
-					next(err);
-				}
-
-				//attach user's ID to session
-				req.session.user = results[0].UserID;
+				console.log("Data does not match any records in database");
+				res.redirect('/login');
+			}
+			else
+			{
+				//code inspired from https://expressjs.com/en/resources/middleware/session.html			
 		
-				//save session before redirect
-				req.session.save(function(err)
+				//Regenerate the session to give it a new id
+				req.session.regenerate(function(err)
 				{
 					if(err)
 					{
 						next(err);
 					}
-				
-					res.redirect('/user_homepage');
-				});
-			});
-			console.log("successfully found record");
+						
+					//attach user's ID to session
+					req.session.user = dbUser;
+
+					//save session before redirect
+					req.session.save(function(err)
+					{
+						if(err)
+						{
+							next(err);
+						}
+		
+						res.redirect('/user_homepage');
+					});
+				});			
+		
+			}
 		}
 	});
-	
-	
 });
 
 app.post('/register',
@@ -277,17 +289,40 @@ app.post('/register',
 
 
 	var username = req.body.email;
-    var password = req.body.password;
-    var query = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', '" + password + "')";
+	var password = req.body.password;
 
-    database.query(query, function(err, result)
-    {
-        if(err) throw err;
-        console.log("Values added to user credentials table successfully");
-    });
+	// Check if email already exists in system
+	var query = "SELECT Username FROM UserCredentials WHERE Username='" + username + "'";
 
-	res.redirect('/login');
-1	
+	database.query(query, function(err, result)
+	{
+		if(err) throw err;
+		if(result.length != 0)
+		{
+			console.log('User already exists!');
+			res.redirect('/register');
+		}
+		else
+		{
+			
+			// function from the official bcrypt documentation
+			bcrypt.genSalt(saltRounds, function (err, salt)
+			{
+				bcrypt.hash(password, salt, function(err, hash)
+				{
+			
+					var query = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', '" + hash + "')";
+
+    					database.query(query, function(err, result)
+    					{
+        					if(err) throw err;
+        					console.log("Values added to user credentials table successfully");
+							res.redirect('/login');
+    					});
+				});
+			});
+		}
+	});
 });
 
 /*app.post('/profile_management',
