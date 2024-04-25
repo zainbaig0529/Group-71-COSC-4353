@@ -36,7 +36,7 @@
 			<input type="number" id="GallonsRequested" name="GallonsRequested" min="1" class="required" required oninput="enableSubmit()"><br><br>
 			
 			<label for="DeliveryAddress">Delivery Address:</label><br>
-			<input type="text" id="DeliveryAddress" name="DeliveryAddress" class="required" required oninput="enableSubmit()"><br><br>
+			<input type="text" id="DeliveryAddress" name="DeliveryAddress" class="required" disabled value="<%= deliveryAddress %>"><br><br>
 
 			<label for="OrderDate">Select A Delivery Date</label><br>
 			<input type="date" id="OrderDate" name="OrderDate" min="<%= minimum_date %>" class="required" required oninput="enableSubmit()"><br><br>

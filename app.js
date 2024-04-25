@@ -1,5 +1,4 @@
 const express = require('express');
-var bodyParser = require("body-parser");
 const app = express();
 const PORT = 3000;
 const {body, validationResult} = require('express-validator');
@@ -10,6 +9,7 @@ const mysql = require('mysql');
 const MySQLStore = require('express-mysql-session')(session);
 const {v1: uuidv1} = require('uuid');
 const md5 = require('md5');
+const bodyParser = require('body-parser');
 
 //Variables for encryption
 const bcrypt = require('bcrypt');
@@ -164,8 +164,16 @@ app.get('/fuel_quote_form', function(req, res)
 
 		date_min = yyyy + "-" + mm + "-" + dd;
 
+		const query="SELECT ClientAddress1 From ClientInformation WHERE ClientID IN (SELECT UserID FROM UserCredentials WHERE Username=?)"
+		const val = req.session.user;
 
-		res.render(__dirname + "/views/fuel_quote_form.ejs", {minimum_date: date_min});
+		database.query(query, val, function(err, result)
+		{
+			if(err) throw err;
+			res.locals.minimum_date = date_min;
+			res.locals.deliveryAddress = result[0].ClientAddress1;
+			res.render(__dirname + "/views/fuel_quote_form.ejs");
+		});
 	}
 	else
 	{
@@ -292,7 +300,7 @@ app.post('/register',
 	var password = req.body.password;
 
 	// Check if email already exists in system
-	var query = "SELECT Username FROM UserCredentials WHERE Username='" + username + "'";
+	var query = "SELECT Username, UserID FROM UserCredentials WHERE Username='" + username + "'";
 
 	database.query(query, function(err, result)
 	{
@@ -304,6 +312,7 @@ app.post('/register',
 		}
 		else
 		{
+
 			
 			// function from the official bcrypt documentation
 			bcrypt.genSalt(saltRounds, function (err, salt)
@@ -311,11 +320,34 @@ app.post('/register',
 				bcrypt.hash(password, salt, function(err, hash)
 				{
 			
-					var query = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', '" + hash + "')";
+					var query2 = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', '" + hash + "')";
 
-    					database.query(query, function(err, result)
+    					database.query(query2, function(err, result)
     					{
         					if(err) throw err;
+
+							database.query(query, function(err, result2)
+							{
+								if(err) throw err;
+
+								if(result.length == 0)
+								{
+									console.log('User was not added to UserCredentials table. Delete this user and try again.');
+								}
+								else
+								{
+
+									var query1 = "INSERT INTO ClientInformation (NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip, ClientID) VALUES ('', '', '', '', '', '', '', '" + result2[0].UserID + "')";
+									database.query(query1, function(err, result3)
+									{
+										if(err) throw err;
+
+										console.log("Blank entries created in ClientInformation table.");
+									});
+								}
+
+							});
+
         					console.log("Values added to user credentials table successfully");
 							res.redirect('/login');
     					});
@@ -325,13 +357,13 @@ app.post('/register',
 	});
 });
 
-/*app.post('/profile_management',
+app.post('/profile_management',
     body('NameFirst').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
     body('NameLast').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
     body('ClientAddress1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
-    body('ClientAddress2').isLength({ max: 100 }).withMessage('Invalid address 2'),
+    body('ClientAddress2').isLength({ min: 0, max: 100 }).withMessage('Invalid address 2'),
     body('ClientCity').isLength({ min: 1, max: 100 }).withMessage('Invalid city'),
-    body('ClientState').notEmpty().withMessage('State is required'),
+	body('ClientState').notEmpty().withMessage('Invalid State'),
     body('ClientZip').isNumeric().isLength({ min: 5, max: 9 }).withMessage('Invalid zipcode. Must be between 5 and 9 digits'),
 
     function (req, res) {
@@ -344,72 +376,38 @@ app.post('/register',
             });
         }
 
-        const { NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip } = req.body;
-		const { UserEmail } = req.session.user;
-		//var UserID = statement.executeQuery("SELECT UserID FROM UserCredentials WHERE Username=UserEmail");
+        const firstName = req.body.NameFirst;
+		const lastName = req.body.NameLast;
+		const address1 = req.body.ClientAddress1;
+		const address2 = req.body.ClientAddress2;
+		const city = req.body.ClientCity;
+		const state = req.body.ClientState;
+		const zipcode = req.body.ClientZip;
+	
+		
+		const query2 = "SELECT UserID FROM UserCredentials WHERE Username='" + req.session.user + "'";
+		database.query(query2, function(err, upperResult)
+		{
+			if(err) throw err;
+			
+        	// Insert user profile data into the database
+        	const query = "UPDATE ClientInformation SET NameFirst=?, NameLast=?, ClientAddress1=?, ClientAddress2=?, ClientCity=?, ClientState=?, ClientZip=? WHERE ClientID=?";
+        	const values = [firstName, lastName, address1, address2, city, state, zipcode, upperResult[0].UserID];
 
-        const query = "INSERT INTO ClientInformation (ClientID, NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        const values = [UserID, NameFirst, NameLast, ClientAddress1, ClientAddress2 || null, ClientCity, ClientState, ClientZip];
-
-        database.query(query, values, function (err, result) {
-            if (err) {
-                console.error("Error inserting client information:", err);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Error inserting client information'
-                });
-            }
-            console.log("Client information added successfully");
-            return res.status(200).json({
-                success: true,
-                message: 'Client information submitted successfully'
-            });
-        });
-    });*/
-
-
-
-
-app.post('/profile_management',
-    body('firstName').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
-    body('lastName').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
-    body('address1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
-    body('address2').isLength({ min: 0, max: 100 }).withMessage('Invalid address 2'),
-    body('city').isLength({ min: 1, max: 100 }).withMessage('Invalid city'),
-    body('zipcode').isNumeric().isLength({ min: 5, max: 9 }).withMessage('Invalid zipcode. Must be between 5 and 9 digits'),
-
-    function (req, res) {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                errors: errors.array()
-            });
-        }
-
-        const { firstName, lastName, address1, address2, city, zipcode } = req.body;
-
-        // Insert user profile data into the database
-        const query = "INSERT INTO UserCredentials (FirstName, LastName, Address1, Address2, City, Zipcode) VALUES (?, ?, ?, ?, ?, ?)";
-        const values = [firstName, lastName, address1, address2, city, zipcode];
-
-        database.query(query, values, function (err, result) {
-            if (err) {
-                console.error("Error inserting user profile data:", err);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Error inserting user profile data'
-                });
-            }
-            console.log("User profile data added successfully");
-            // Send response with success message
-            return res.status(200).json({
-                success: true,
-                message: 'User profile submitted successfully'
-            });
-        });
+        	database.query(query, values, async function (err, result) {
+            	if (err) {
+                	console.error("Error inserting user profile data:", err);
+                	return res.status(500).json({
+                    	success: false,
+                    	message: 'Error inserting user profile data'
+                	});
+            	}
+            	console.log("User profile data added successfully");
+            	
+				res.redirect('/user_homepage');
+        	});
     });
+});
 
 app.post('/fuel_quote_form',
     body('GallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
