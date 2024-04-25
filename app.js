@@ -60,6 +60,7 @@ app.set('view engine','ejs');
 app.use(express.static('public'));
 app.use(express.static('assets'));
 app.use(express.static('src'));
+app.use(express.static('views'));
 
 app.use(bodyParser.urlencoded({extended:true}));
 
@@ -207,6 +208,56 @@ app.get('/profile_management', function(req, res)
 	}
 });
 
+app.post('/processfuelform', function(req, res, next)
+{
+	console.log(req.body.gallons + req.body.delivery + req.body.date);
+	
+	var query1 = "select count(CustomerID) as quotes from FuelQuote where CustomerID=(select UserID from UserCredentials where Username=?)"
+
+	var query2 = "select ClientState from ClientInformation where ClientID=(select UserID from UserCredentials where Username=?)"
+
+	var locationFactor = 0.04;
+	var historyFactor = 0.00;
+	var gallonFactor = 0.03;
+	const profitFactor = 0.1;
+	const currentPrice = 1.50;
+	
+	database.query(query1, req.session.user, function(err1, rows1, var1)
+	{
+		if(err1) throw err1;
+
+		database.query(query2, req.session.user, function(err2, rows2, var2)
+		{
+			if(err2) throw err2;
+
+			if(rows2[0].ClientState == "TX")
+			{
+				locationFactor = 0.02;
+			}
+
+			if(rows1[0].quotes == 0)
+			{
+				historyFactor = 0.01;
+			}
+
+			if(req.body.gallons > 1000)
+			{
+				gallonFactor = 0.02;
+			}
+			
+			var margin = currentPrice * (locationFactor - historyFactor + gallonFactor + profitFactor);
+
+			var suggestedPrice = currentPrice + margin;
+
+			var totalDue = req.body.gallons * suggestedPrice;
+
+			var suggestedString = suggestedPrice + "$" + totalDue;
+
+			res.send(suggestedString);
+		});
+	});
+
+});
 
 //process info sent from pages
 app.post('/login',
@@ -421,33 +472,12 @@ app.post('/fuel_quote_form',
             });
         }
 
-        var { GallonsRequested, ClientOutOfState, ClientNew, FuelRate, TotalPrice } = req.body;
-
-		var PricePerGallon = 1.50;
-		var PriceTotal;
-
-		if (ClientNew = 'yes' && ClientOutOfState == 'no')
-			PricePerGallon = PricePerGallon * 1.02;
-		else if (ClientNew = 'yes' && ClientOutOfState == 'yes')
-			PricePerGallon = PricePerGallon * 1.04;
-		else if (ClientNew = 'no' && ClientOutOfState == 'no')
-			PricePerGallon = PricePerGallon * 1.03;
-		else
-			PricePerGallon = PricePerGallon * 1.05;
-
-		if (GallonsRequested < 1000)
-			PricePerGallon = PricePerGallon * 1.03;
-		else
-			PricePerGallon = PricePerGallon * 1.02;
-
-		PriceTotal = PricePerGallon * GallonsRequested;
-
-		FuelRate = parseFloat(FuelRate.toFixed(2));
-		PriceTotal = parseFloat(PriceTotal.toFixed(2));
-
+	var GallonsRequested = req.body.GallonsRequested;
+	var FuelRate = req.body.SuggestedPricePerGallon;
+	var TotalAmountDue = req.body.TotalAmountDue;
         // Insert fuel quote data into the database
-        const query = "INSERT INTO FuelQuote (GallonsRequested, ClientOutOfState, ClientNew, FuelRate, TotalPrice) VALUES (?, ?, ?, ?, ?)";
-        const values = [GallonsRequested, ClientOutOfState, ClientNew, PricePerGallon, PriceTotal];
+        const query = "INSERT INTO FuelQuote (GallonsRequested, FuelRate, TotalPrice, CustomerID) VALUES (?, ?, ?, (SELECT UserID From UserCredentials WHERE Username=?))";
+        const values = [GallonsRequested, FuelRate, TotalAmountDue, req.session.user];
 
         database.query(query, values, function (err, result) {
             if (err) {

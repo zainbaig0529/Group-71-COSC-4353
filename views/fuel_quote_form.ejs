@@ -28,9 +28,41 @@
 				btn1.disabled = !isValid;
 				btn2.disabled = !isValid;
 		}
+
 		
 	</script>
+	
+	<script>
+		
+		function PriceModule()
+		{
+			var xhttp = new XMLHttpRequest();
+			
+			xhttp.onreadystatechange = function() {
+				var element = document.getElementById("SuggestedPricePerGallon");
+				var element2 = document.getElementById("TotalAmountDue");
 
+				var response = this.responseText;
+
+				let index = response.indexOf("$");
+
+				let suggestion = response.substring(0, index);
+				let total = response.substring(index + 1, response.length);
+				element.value = suggestion;
+				element2.value = total;
+			}
+
+			var gallons = document.getElementById("GallonsRequested").value;
+			var delivery = document.getElementById("DeliveryAddress").value;
+			var orderdate = document.getElementById("OrderDate").value;
+
+			var values = "gallons=" + gallons + "&delivery=" +  delivery + "&date=" + orderdate;
+
+			xhttp.open("POST","/processfuelform")
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send(values);
+		}
+	</script>
 	<div class="container">
 		<form action="/fuel_quote_form" method="post">
 			<h1>Fuel Quote Form</h1>
@@ -46,9 +78,7 @@
 			<button type="button" disabled onclick="PriceModule()">Get Quote</button><br><br>
 			
 			<label for="SuggestedPricePerGallon">Suggested Price Per Gallon</label><br>
-			<div id="suggested">
 			<input type="text" id="SuggestedPricePerGallon" name="SuggestedPricePerGallon" value="suggested_price_per_gallon ejs variable here" readonly><br><br>
-			</div>
 			<label for="TotalAmountDue">Total Amount Due</label><br>
 			<input type="text" id="TotalAmountDue" name="TotalAmountDue" value="total_amount_due ejs variable here" readonly>
 			
