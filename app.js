@@ -165,14 +165,14 @@ app.get('/fuel_quote_form', function(req, res)
 
 		date_min = yyyy + "-" + mm + "-" + dd;
 
-		const query="SELECT ClientAddress1 From ClientInformation WHERE ClientID IN (SELECT UserID FROM UserCredentials WHERE Username=?)"
+		const query="SELECT ClientAddress1, ClientCity, ClientState, ClientZip From ClientInformation WHERE ClientID IN (SELECT UserID FROM UserCredentials WHERE Username=?)"
 		const val = req.session.user;
 
 		database.query(query, val, function(err, result)
 		{
 			if(err) throw err;
 			res.locals.minimum_date = date_min;
-			res.locals.deliveryAddress = result[0].ClientAddress1;
+			res.locals.deliveryAddress = result[0].ClientAddress1 + ", " + result[0].ClientCity + ", " + result[0].ClientState + ", " + result[0].ClientZip;
 			res.render(__dirname + "/views/fuel_quote_form.ejs");
 		});
 	}
@@ -184,14 +184,23 @@ app.get('/fuel_quote_form', function(req, res)
 
 app.get('/fuel_quote_history', function(req, res)
 {
-	
 	if(req.session.user)
 	{
-		res.sendFile(__dirname + "/public/fuel_quote_history.html");
+		
+		var query = "SELECT * FROM FuelQuote WHERE CustomerID=(SELECT UserID FROM UserCredentials WHERE Username=?)";
+	
+
+		database.query(query, req.session.user, function(err, results)
+		{
+			if(err) throw err;
+			res.render(__dirname + "/views/fuel_quote_history.ejs", {data: results});
+		});
+
 	}
 	else
 	{
-		res.redirect("/default_homepage");
+
+		res.redirect("/default_homepage", {data: results});
 	}
 });
 
@@ -210,7 +219,6 @@ app.get('/profile_management', function(req, res)
 
 app.post('/processfuelform', function(req, res, next)
 {
-	console.log(req.body.gallons + req.body.delivery + req.body.date);
 	
 	var query1 = "select count(CustomerID) as quotes from FuelQuote where CustomerID=(select UserID from UserCredentials where Username=?)"
 
@@ -475,9 +483,11 @@ app.post('/fuel_quote_form',
 	var GallonsRequested = req.body.GallonsRequested;
 	var FuelRate = req.body.SuggestedPricePerGallon;
 	var TotalAmountDue = req.body.TotalAmountDue;
+	var DeliveryAddress = req.body.DeliveryAddress;
+	var DeliveryDate = req.body.OrderDate;
         // Insert fuel quote data into the database
-        const query = "INSERT INTO FuelQuote (GallonsRequested, FuelRate, TotalPrice, CustomerID) VALUES (?, ?, ?, (SELECT UserID From UserCredentials WHERE Username=?))";
-        const values = [GallonsRequested, FuelRate, TotalAmountDue, req.session.user];
+        const query = "INSERT INTO FuelQuote (GallonsRequested, FuelRate, TotalPrice, DeliveryAddress, DeliveryDate, CustomerID) VALUES (?, ?, ?, ?, ?,(SELECT UserID From UserCredentials WHERE Username=?))";
+        const values = [GallonsRequested, FuelRate, TotalAmountDue, DeliveryAddress, DeliveryDate, req.session.user];
 
         database.query(query, values, function (err, result) {
             if (err) {

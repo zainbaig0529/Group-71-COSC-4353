@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fuel Quote Confirmation</title>
+    <title>Fuel Quote History</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
 
-        <h1>Fuel Quote Confirmation</h1>
+        <h1>Fuel Quote History</h1>
         <table border="1">
             <thead>
                 <tr>
@@ -17,19 +17,19 @@
                     <th>Delivery Address</th>
 					<th>Delivery Date</th>
 					<th>Suggested Price / Gallon</th>
-					<th>Total Amount Due</th>
-                    <!-- Add any additional fields as needed -->
+					<th>Total Price</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Sample row, replace with dynamic data from the server -->
-                <tr>
-                    <td>100</td>
-                    <td>123 Main St, Cityville</td>
-					<td>2024-02-22</td>
-					<td>2.5</td>
-					<td>250.00</td>
-                    <!-- Add any additional fields as needed -->
+                <!-- Table creation idea obtained from https://stackoverflow.com/questions/45983078/how-to-pass-a-data-array-from-express-js-to-ejs-template-and-render-them -->
+				<% data.forEach(function(dat) { %>
+				<tr>
+					<td><%= dat.GallonsRequested %></td>
+					<td><%= dat.DeliveryAddress %></td>
+					<td><%= dat.DeliveryDate %></td>
+					<td>$<%= parseFloat(dat.FuelRate).toFixed(2) %></td>
+					<td>$<%= parseFloat(dat.TotalPrice).toFixed(2) %></td>
+				<% }); %>
                 </tr>
             </tbody>
         </table>

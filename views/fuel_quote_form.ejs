@@ -8,28 +8,56 @@
 </head>
 <body>
 	<script type="text/javascript" language="javascript">
+
 		//enabledSubmit inspired by https://websitemaintenance.medium.com/simple-javascript-to-disable-submit-button-until-input-fields-are-filled-in-ee9ec13906be
-		function enableSubmit()
+		function enableQuote()
 		{
 			let inputs = document.getElementsByClassName('required');
 			let btn1 = document.querySelector('button[type="button"]');
 			let btn2 = document.querySelector('button[type="submit"]');
 			let isValid = true;
 
+			//enable the quote button if required fields are filled
 			for(var i = 0; i < inputs.length; i++)
 			{
 				let changedInput = inputs[i];
 				if(changedInput.value.trim() === "" || changedInput.value === null)
 				{
 					isValid = false;
-						break;
+					break;
 				}
 			}
+			
 				btn1.disabled = !isValid;
-				btn2.disabled = !isValid;
+
+			//empty the estimate and total price each time a required input changes
+			let noneditables = document.getElementsByClassName('nonedit');
+
+			for(var i = 0; i < noneditables.length; i++)
+			{
+				noneditables[i].value = "";
+			}
+
+			//disable the submit button, if enabled
+			btn2.disabled = true;
 		}
 
+	function enableSubmit()
+	{
+		let inputs = document.getElementsByClassName('nonedit');
+		let btn2 = document.querySelector('button[type="submit"]');
+		let isValid = true;
 		
+		for(var i = 0; i < inputs.length; i++)
+		{
+			if(inputs[i].value.trim() === "" || inputs[i].value === null)
+			{
+				isValid = false;
+				break;
+			}
+		}
+		btn2.disabled = !isValid;
+	}
 	</script>
 	
 	<script>
@@ -50,6 +78,7 @@
 				let total = response.substring(index + 1, response.length);
 				element.value = suggestion;
 				element2.value = total;
+				enableSubmit();
 			}
 
 			var gallons = document.getElementById("GallonsRequested").value;
@@ -67,20 +96,21 @@
 		<form action="/fuel_quote_form" method="post">
 			<h1>Fuel Quote Form</h1>
 			<label for="GallonsRequested">Gallons Requested:</label><br>
-			<input type="number" id="GallonsRequested" name="GallonsRequested" min="1" class="required" required oninput="enableSubmit()"><br><br>
+			<input type="number" id="GallonsRequested" name="GallonsRequested" min="1" class="required" required oninput="enableQuote()"><br><br>
 			
 			<label for="DeliveryAddress">Delivery Address:</label><br>
-			<input type="text" id="DeliveryAddress" name="DeliveryAddress" class="required" disabled value="<%= deliveryAddress %>"><br><br>
+			<input type="text" id="DeliveryAddress" name="DeliveryAddress" class="required" value="<%= deliveryAddress %>" readonly><br><br>
 
 			<label for="OrderDate">Select A Delivery Date</label><br>
-			<input type="date" id="OrderDate" name="OrderDate" min="<%= minimum_date %>" class="required" required oninput="enableSubmit()"><br><br>
+			<input type="date" id="OrderDate" name="OrderDate" min="<%= minimum_date %>" class="required" required onchange="enableQuote()"><br><br>
 			
 			<button type="button" disabled onclick="PriceModule()">Get Quote</button><br><br>
 			
 			<label for="SuggestedPricePerGallon">Suggested Price Per Gallon</label><br>
-			<input type="text" id="SuggestedPricePerGallon" name="SuggestedPricePerGallon" value="suggested_price_per_gallon ejs variable here" readonly><br><br>
+			<input type="text" id="SuggestedPricePerGallon" name="SuggestedPricePerGallon" value="" class="nonedit" readonly required><br><br>
+			
 			<label for="TotalAmountDue">Total Amount Due</label><br>
-			<input type="text" id="TotalAmountDue" name="TotalAmountDue" value="total_amount_due ejs variable here" readonly>
+			<input type="text" id="TotalAmountDue" name="TotalAmountDue" class="nonedit" value="" readonly required><br><br>
 			
 			<button type="submit" disabled>Submit</button>
         </form>
