@@ -69,7 +69,21 @@ app.get("/user_homepage",  function (req, res) {
 	
 	if(req.session.user)
 	{
-		res.sendFile(__dirname + "/public/homepage_session.html");
+		var query = "SELECT CONCAT(NameFirst, ' ',  NameLast) AS FullName, ClientAddress1 FROM ClientInformation WHERE ClientID=(SELECT UserID FROM UserCredentials WHERE Username=?)";
+
+		database.query(query, req.session.user, function(err, rows)
+		{
+			if(err) throw err;
+
+			var siteMessage = "";
+
+			if(rows[0].ClientAddress1 == "")
+			{
+				siteMessage = "Before proceeding, please tell us more about yourself in the Account Information page.";
+			}
+
+			res.render(__dirname + "/views/homepage_session.ejs", {full_name: rows[0].FullName, message: siteMessage});
+		});
 	}
 	else
 	{
@@ -108,7 +122,7 @@ app.get('/login', function(req, res)
 {
 	if(!req.session.user)
 	{
-		res.sendFile(__dirname + "/public/login.html");
+		res.render(__dirname + "/views/login.ejs", {error_message:""});
 	}
 	else
 	{
@@ -120,7 +134,7 @@ app.get('/register', function(req, res)
 {
 	if(!req.session.user)
 	{
-		res.sendFile(__dirname + "/public/registration.html");
+		res.render(__dirname + "/views/registration.ejs", {error_message:""});
 	}
 	else
 	{
@@ -166,14 +180,22 @@ app.get('/fuel_quote_form', function(req, res)
 		date_min = yyyy + "-" + mm + "-" + dd;
 
 		const query="SELECT ClientAddress1, ClientCity, ClientState, ClientZip From ClientInformation WHERE ClientID IN (SELECT UserID FROM UserCredentials WHERE Username=?)"
-		const val = req.session.user;
 
-		database.query(query, val, function(err, result)
+		database.query(query, req.session.user, function(err, result)
 		{
 			if(err) throw err;
 			res.locals.minimum_date = date_min;
-			res.locals.deliveryAddress = result[0].ClientAddress1 + ", " + result[0].ClientCity + ", " + result[0].ClientState + ", " + result[0].ClientZip;
-			res.render(__dirname + "/views/fuel_quote_form.ejs");
+			 
+			if(result[0].ClientAddress1 === "" || result[0].ClientAddress1 === null)
+			{
+				res.locals.deliveryAddress = "";
+			}
+			else
+			{
+				res.locals.deliveryAddress = result[0].ClientAddress1 + ", " + result[0].ClientCity + ", " + result[0].ClientState + ", " + result[0].ClientZip;
+			}
+
+			res.render(__dirname + "/views/fuel_quote_form.ejs", {error_message: ""});
 		});
 	}
 	else
@@ -193,7 +215,14 @@ app.get('/fuel_quote_history', function(req, res)
 		database.query(query, req.session.user, function(err, results)
 		{
 			if(err) throw err;
-			res.render(__dirname + "/views/fuel_quote_history.ejs", {data: results});
+			if(results.length == 0)
+			{
+				res.render(__dirname + "/views/fuel_quote_history_alt.ejs");
+			}
+			else
+			{
+				res.render(__dirname + "/views/fuel_quote_history.ejs", {data: results});
+			}
 		});
 
 	}
@@ -209,7 +238,18 @@ app.get('/profile_management', function(req, res)
 	
 	if(req.session.user)
 	{
-		res.sendFile(__dirname + "/public/profile_management.html");
+		var query = "SELECT * FROM ClientInformation WHERE ClientID=(SELECT UserID FROM UserCredentials WHERE Username=?)";
+
+		database.query(query, req.session.user, function(err, rows)
+		{
+			if(err)
+			{
+				res.render(__dirname + "/views/profile_management.ejs", {error_message: "An unknown error has occured. Please refresh the page, and try again."});
+			}
+
+
+			res.render(__dirname + "/views/profile_management.ejs", {error_message:"", first_name: rows[0].NameFirst, last_name: rows[0].NameLast, address_1: rows[0].ClientAddress1, address_2: rows[0].ClientAddress2, city:rows[0].ClientCity, state: rows[0].ClientState, zip: rows[0].ClientZip});
+		});
 	}
 	else
 	{
@@ -217,9 +257,11 @@ app.get('/profile_management', function(req, res)
 	}
 });
 
-app.post('/processfuelform', function(req, res, next)
+//fuel price module
+app.post('/processfuelform',
+		body('gallons').notEmpty().isNumeric().escape(),
+		function(req, res, next)
 {
-	
 	var query1 = "select count(CustomerID) as quotes from FuelQuote where CustomerID=(select UserID from UserCredentials where Username=?)"
 
 	var query2 = "select ClientState from ClientInformation where ClientID=(select UserID from UserCredentials where Username=?)"
@@ -237,7 +279,7 @@ app.post('/processfuelform', function(req, res, next)
 		database.query(query2, req.session.user, function(err2, rows2, var2)
 		{
 			if(err2) throw err2;
-
+			
 			if(rows2[0].ClientState == "TX")
 			{
 				locationFactor = 0.02;
@@ -258,182 +300,173 @@ app.post('/processfuelform', function(req, res, next)
 			var suggestedPrice = currentPrice + margin;
 
 			var totalDue = req.body.gallons * suggestedPrice;
-
 			var suggestedString = suggestedPrice + "$" + totalDue;
-
 			res.send(suggestedString);
 		});
 	});
-
 });
 
-//process info sent from pages
 app.post('/login',
-		body('email').isEmail().withMessage('Invalid email'), 
-		body('password').isLength({min:8}).withMessage('Invalid password. Must be at least 8 characters.'),
+		body('email').notEmpty().isEmail().escape(), 
+		body('password').notEmpty().isLength({min:8}).escape(),
 		function (req, res, next) {
-    const errors = validationResult(req);
+			const errors = validationResult(req);
 
-	if(!errors.isEmpty())
-	{
-		return res.status(400).json(
-		{
-			success: false,
-			errors:errors.array()
-		});
-	}
-
-	var email = req.body.email;
-	var password = req.body.password;
-	var query = "SELECT Username, Password FROM UserCredentials WHERE Username='" + email + "'";
-	database.query(query, async function(err, results, fields)
-	{
-		if(err)
-		{
-			throw err;
-		}
-
-		if(results.length == 0)
-		{
-			console.log("Data not found in database.");
-			res.redirect('/login');
-		}
-		else
-		{
-			var dbUser = results[0].Username;
-			var dbPass = results[0].Password;
-			var results = await bcrypt.compare(password, dbPass);
-			if(email != dbUser || results == false)
+			if(!errors.isEmpty())
 			{
-				console.log("Data does not match any records in database");
-				res.redirect('/login');
+				return res.render(__dirname+ "/views/login.ejs", {error_message: "Invalid data submitted"});
 			}
-			else
+
+			var email = req.body.email;
+			var password = req.body.password;
+			var query = "SELECT Username, Password FROM UserCredentials WHERE Username=?";
+			database.query(query, email, async function(err, results, fields)
 			{
-				//code inspired from https://expressjs.com/en/resources/middleware/session.html			
-		
-				//Regenerate the session to give it a new id
-				req.session.regenerate(function(err)
+				if(err)
 				{
-					if(err)
-					{
-						next(err);
-					}
-						
-					//attach user's ID to session
-					req.session.user = dbUser;
+					console.log(err);
+					return res.render(__dirname + "/views/login.ejs", {error_message: "An unknown error has occured. Please try again."});
+				}
 
-					//save session before redirect
-					req.session.save(function(err)
+				if(results.length == 0)
+				{
+					return res.render(__dirname + "/views/login.ejs", {error_message: "User not found"});
+				}
+				else
+				{
+					var dbUser = results[0].Username;
+					var dbPass = results[0].Password;
+					var results = await bcrypt.compare(password, dbPass);
+					if(email != dbUser || results == false)
 					{
-						if(err)
+						return res.render(__dirname + "/views/login.ejs", {error_message: "User not found"});
+					}
+					else
+					{
+						//code inspired from https://expressjs.com/en/resources/middleware/session.html			
+				
+						//Regenerate the session to give it a new id
+						req.session.regenerate(function(err)
 						{
-							next(err);
-						}
-		
-						res.redirect('/user_homepage');
-					});
-				});			
-		
-			}
-		}
-	});
+							if(err)
+							{
+								return res.render(__dirname + "/views/login.ejs", {error_message: "An unknown error has occured. Please try again."});
+							}	
+								
+							//attach user's ID to session
+							req.session.user = dbUser;
+
+							//save session before redirect
+							req.session.save(function(err)
+							{
+								if(err)
+								{
+									next(err);
+								}
+				
+								res.redirect('/user_homepage');
+							});
+						});			
+				
+					}
+				}
+		});
 });
 
 app.post('/register',
-    body('email').isEmail().withMessage('Invalid email'),
-    body('password').isLength({ min: 8 }).withMessage('Invalid password. Must be at least 8 characters'),
+    body('email').notEmpty().isEmail().escape(),
+    body('password').notEmpty().isLength({ min: 8 }).escape(),
+	body('confirm').notEmpty().isLength({ min:8}).escape(),
     function (req, res) {
-    const errors = validationResult(req);
-  if(!errors.isEmpty())
-  {
-        return res.status(400).json(
-        {
-            success: false,
-            errors:errors.array()
-        });
-    }
-
-
-	var username = req.body.email;
-	var password = req.body.password;
-
-	// Check if email already exists in system
-	var query = "SELECT Username, UserID FROM UserCredentials WHERE Username='" + username + "'";
-
-	database.query(query, function(err, result)
-	{
-		if(err) throw err;
-		if(result.length != 0)
+		const errors = validationResult(req);
+	  	if(!errors.isEmpty())
 		{
-			console.log('User already exists!');
-			res.redirect('/register');
+			return res.render(__dirname + "/views/registration.ejs", {error_message: "Invalid Data Submitted"});
 		}
-		else
+		else if(req.body.password != req.body.confirm)
 		{
+			return res.render(__dirname + "/views/registration.ejs", {error_message: "Passwords do not match"});
+		}
 
-			
-			// function from the official bcrypt documentation
-			bcrypt.genSalt(saltRounds, function (err, salt)
+
+		var username = req.body.email;
+		var password = req.body.password;
+
+		// Check if email already exists in system
+		var query = "SELECT Username, UserID FROM UserCredentials WHERE Username=?";
+
+		database.query(query, username, function(err, result)
+		{
+			if(err) throw err;
+			if(result.length != 0)
 			{
-				bcrypt.hash(password, salt, function(err, hash)
+				return res.render(__dirname + "/views/registration.ejs", {error_message: "User already exists"});
+			}
+			else
+			{
+
+				
+				// function from the official bcrypt documentation
+				bcrypt.genSalt(saltRounds, function (err, salt)
 				{
-			
-					var query2 = "INSERT INTO UserCredentials (Username, Password) VALUES ('" + username + "', '" + hash + "')";
-
-    					database.query(query2, function(err, result)
-    					{
-        					if(err) throw err;
-
-							database.query(query, function(err, result2)
+					bcrypt.hash(password, salt, function(err, hash)
+					{
+				
+						var query2 = "INSERT INTO UserCredentials (Username, Password) VALUES (?,?)";
+						var queryValues = [username, hash];
+							database.query(query2, queryValues, function(err, result)
 							{
 								if(err) throw err;
-
-								if(result.length == 0)
+								//running the same query again to obtain the UserID of the newly created account
+								database.query(query, username, function(err2, result2)
 								{
-									console.log('User was not added to UserCredentials table. Delete this user and try again.');
-								}
-								else
-								{
+									if(err2) throw err2;
 
-									var query1 = "INSERT INTO ClientInformation (NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip, ClientID) VALUES ('', '', '', '', '', '', '', '" + result2[0].UserID + "')";
-									database.query(query1, function(err, result3)
+									if(result.length == 0)
 									{
-										if(err) throw err;
+										console.log('User was not added to UserCredentials table. Delete this user and try again.');
+									}
+									else
+									{
+										//create an empty entry for the user in the ClientInformation table
+										//delete and convert to trigger if time allows
+										var query1 = "INSERT INTO ClientInformation (NameFirst, NameLast, ClientAddress1, ClientAddress2, ClientCity, ClientState, ClientZip, ClientID) VALUES ('New', 'User', '', '', '', '', '', ?)";
+										database.query(query1, result2[0].UserID, function(err3, result3)
+										{
+											if(err3) throw err;
 
-										console.log("Blank entries created in ClientInformation table.");
-									});
-								}
+											console.log("Blank entries created in ClientInformation table.");
+										});
+									}
 
+								});
+
+								console.log("Values added to user credentials table successfully");
+								res.redirect('/login');
 							});
-
-        					console.log("Values added to user credentials table successfully");
-							res.redirect('/login');
-    					});
+					});
 				});
-			});
-		}
-	});
+			}
+		});
 });
 
 app.post('/profile_management',
-    body('NameFirst').isLength({ min: 1, max: 50 }).withMessage('Invalid first name'),
-    body('NameLast').isLength({ min: 1, max: 50 }).withMessage('Invalid last name'),
-    body('ClientAddress1').isLength({ min: 1, max: 100 }).withMessage('Invalid address 1'),
-    body('ClientAddress2').isLength({ min: 0, max: 100 }).withMessage('Invalid address 2'),
-    body('ClientCity').isLength({ min: 1, max: 100 }).withMessage('Invalid city'),
-	body('ClientState').notEmpty().withMessage('Invalid State'),
-    body('ClientZip').isNumeric().isLength({ min: 5, max: 9 }).withMessage('Invalid zipcode. Must be between 5 and 9 digits'),
+    body('NameFirst').isLength({ min: 1, max: 50 }).escape(),
+    body('NameLast').isLength({ min: 1, max: 50 }).escape(),
+    body('ClientAddress1').isLength({ min: 1, max: 100 }).escape(),
+    body('ClientAddress2').isLength({ min: 0, max: 100 }).escape(),
+    body('ClientCity').isLength({ min: 1, max: 100 }).escape(),
+	body('ClientState').notEmpty().escape(),
+    body('ClientZip').isNumeric().isLength({ min: 5, max: 9 }).escape(),
 
     function (req, res) {
         const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                errors: errors.array()
-            });
-        }
+        if(!errors.isEmpty())
+		{
+			throw errors;
+        	return res.render(__dirname + "/views/profile_management.ejs", {first_name: req.body.NameFirst, last_name: req.body.NameLast, address_1: req.body.ClientAddress1, address_2: req.body.ClientAddress2, city: req.body.ClientCity, state: req.body.ClientState, zip: req.body.ClientZip, error_message: "Form data invalid. Please try again."});
+		}
 
         const firstName = req.body.NameFirst;
 		const lastName = req.body.NameLast;
@@ -444,65 +477,46 @@ app.post('/profile_management',
 		const zipcode = req.body.ClientZip;
 	
 		
-		const query2 = "SELECT UserID FROM UserCredentials WHERE Username='" + req.session.user + "'";
-		database.query(query2, function(err, upperResult)
-		{
-			if(err) throw err;
-			
-        	// Insert user profile data into the database
-        	const query = "UPDATE ClientInformation SET NameFirst=?, NameLast=?, ClientAddress1=?, ClientAddress2=?, ClientCity=?, ClientState=?, ClientZip=? WHERE ClientID=?";
-        	const values = [firstName, lastName, address1, address2, city, state, zipcode, upperResult[0].UserID];
+        const query = "UPDATE ClientInformation SET NameFirst=?, NameLast=?, ClientAddress1=?, ClientAddress2=?, ClientCity=?, ClientState=?, ClientZip=? WHERE ClientID=(SELECT UserID FROM UserCredentials WHERE Username=?)";
+        const values = [firstName, lastName, address1, address2, city, state, zipcode, req.session.user];
 
-        	database.query(query, values, async function (err, result) {
-            	if (err) {
-                	console.error("Error inserting user profile data:", err);
-                	return res.status(500).json({
-                    	success: false,
-                    	message: 'Error inserting user profile data'
-                	});
-            	}
-            	console.log("User profile data added successfully");
+        database.query(query, values, async function (err, result) {
+            if (err) throw err;
+            
+			console.log("User profile data added successfully");
             	
-				res.redirect('/user_homepage');
+			res.redirect('/user_homepage');
         	});
-    });
 });
 
 app.post('/fuel_quote_form',
-    body('GallonsRequested').isNumeric().withMessage('Gallons requested must be a number'),
+    body('GallonsRequested').notEmpty().isNumeric().escape(),
+	body('DeliveryAddress').notEmpty().escape(),
+	body('OrderDate').notEmpty().escape(),
+	body('SuggestedPricePerGallon').notEmpty().isNumeric().escape(),
+	body('TotalAmountDue').notEmpty().isNumeric().escape(),
     function (req, res) {
         const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                errors: errors.array()
-            });
-        }
+        if (!errors.isEmpty())
+		{
+        	return res.render(__dirname + '/views/fuel_quote_form.ejs', {error_message: "Invalid data. Please try again."});
+		}
 
 	var GallonsRequested = req.body.GallonsRequested;
 	var FuelRate = req.body.SuggestedPricePerGallon;
 	var TotalAmountDue = req.body.TotalAmountDue;
 	var DeliveryAddress = req.body.DeliveryAddress;
 	var DeliveryDate = req.body.OrderDate;
-        // Insert fuel quote data into the database
+	
         const query = "INSERT INTO FuelQuote (GallonsRequested, FuelRate, TotalPrice, DeliveryAddress, DeliveryDate, CustomerID) VALUES (?, ?, ?, ?, ?,(SELECT UserID From UserCredentials WHERE Username=?))";
         const values = [GallonsRequested, FuelRate, TotalAmountDue, DeliveryAddress, DeliveryDate, req.session.user];
 
         database.query(query, values, function (err, result) {
-            if (err) {
-                console.error("Error inserting fuel quote data:", err);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Error inserting fuel quote data'
-                });
-            }
+            if (err) throw err;
             console.log("Fuel quote data added successfully");
-            // Send response with success message
-            return res.status(200).json({
-                success: true,
-                message: 'Fuel quote submitted successfully'
-            });
+            
+			res.redirect('/user_homepage');
         });
     });
 

@@ -71,7 +71,7 @@
 				var element2 = document.getElementById("TotalAmountDue");
 
 				var response = this.responseText;
-
+				console.log(response);
 				let index = response.indexOf("$");
 
 				let suggestion = response.substring(0, index);
@@ -85,7 +85,8 @@
 			var delivery = document.getElementById("DeliveryAddress").value;
 			var orderdate = document.getElementById("OrderDate").value;
 
-			var values = "gallons=" + gallons + "&delivery=" +  delivery + "&date=" + orderdate;
+			var values = "gallons=" + gallons;
+			//var values = "gallons="+ gallons + "&delivery=" +  delivery + "&date=" + orderdate;
 
 			xhttp.open("POST","/processfuelform")
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -95,6 +96,7 @@
 	<div class="container">
 		<form action="/fuel_quote_form" method="post">
 			<h1>Fuel Quote Form</h1>
+			<h3 style="color:tomato;"><%= error_message %></h3>
 			<label for="GallonsRequested">Gallons Requested:</label><br>
 			<input type="number" id="GallonsRequested" name="GallonsRequested" min="1" class="required" required oninput="enableQuote()"><br><br>
 			
@@ -112,7 +114,8 @@
 			<label for="TotalAmountDue">Total Amount Due</label><br>
 			<input type="text" id="TotalAmountDue" name="TotalAmountDue" class="nonedit" value="" readonly required><br><br>
 			
-			<button type="submit" disabled>Submit</button>
+			<a href="/user_homepage" class="button">Cancel</a>
+			<button type="submit" class="button" disabled>Submit</button>
         </form>
     </div>
 
